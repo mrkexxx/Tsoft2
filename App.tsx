@@ -9,23 +9,32 @@ import ThumbnailGenerator from './components/ThumbnailGenerator';
 import YouTubeSeoGenerator from './components/YouTubeSeoGenerator';
 import ApiKeySetup from './components/ApiKeySetup';
 import { Article } from './types';
+import InfoPopup from './components/InfoPopup';
 
-type Page = 'home' | 'scriptToImage' | 'veoAnimation' | 'history' | 'articleDetail' | 'thumbnailGenerator' | 'youtubeSeo';
+type Page = 'home' | 'scriptToImage' | 'veoAnimation' | 'history' | 'articleDetail' | 'thumbnailGenerator' | 'youtubeSeo' | 'apiKeySetup';
 
 const App: React.FC = () => {
   const [hasApiKey, setHasApiKey] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  const [showInfoPopup, setShowInfoPopup] = useState<boolean>(false);
 
   useEffect(() => {
     const storedKey = localStorage.getItem('gemini-api-key');
     if (storedKey) {
       setHasApiKey(true);
     }
+    
+    const popupShown = sessionStorage.getItem('infoPopupShown');
+    if (!popupShown) {
+      setShowInfoPopup(true);
+      sessionStorage.setItem('infoPopupShown', 'true');
+    }
   }, []);
 
   const handleApiKeySuccess = () => {
     setHasApiKey(true);
+    setCurrentPage('home');
   };
 
   const navigateToArticleDetail = (article: Article) => {
@@ -62,6 +71,11 @@ const App: React.FC = () => {
     setCurrentPage('history');
     setSelectedArticle(null);
   };
+
+  const navigateToApiKeySetup = () => {
+    setCurrentPage('apiKeySetup');
+    setSelectedArticle(null);
+  };
   
   if (!hasApiKey) {
     return <ApiKeySetup onSuccess={handleApiKeySuccess} />;
@@ -87,6 +101,8 @@ const App: React.FC = () => {
                 return <HistoryPage onGoHome={navigateHome} onNavigateToArticle={navigateToArticleDetail} />;
             }
             return <ArticleViewer article={selectedArticle} onBack={navigateToHistory} />;
+        case 'apiKeySetup':
+            return <ApiKeySetup onSuccess={handleApiKeySuccess} />;
         default:
             return <HomePage onNavigateToScriptToImage={navigateToScriptToImage} onNavigateToVeoAnimation={navigateToVeoAnimation} onNavigateToThumbnailGenerator={navigateToThumbnailGenerator} onNavigateToYouTubeSeo={navigateToYouTubeSeo} />;
     }
@@ -94,7 +110,8 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-dark-bg text-dark-text">
-      <Header onGoHome={navigateHome} onNavigateToHistory={navigateToHistory} />
+      {showInfoPopup && <InfoPopup onClose={() => setShowInfoPopup(false)} />}
+      <Header onGoHome={navigateHome} onNavigateToHistory={navigateToHistory} onNavigateToApiKeySetup={navigateToApiKeySetup} />
       <main className="container mx-auto p-4 md:p-8">
         {renderPage()}
       </main>

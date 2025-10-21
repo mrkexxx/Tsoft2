@@ -85,12 +85,12 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNaviga
   return (
     <div className="animate-fade-in">
         <section className="text-center py-16 md:py-20">
-            <h1 className="animated-gradient-text text-4xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-brand-light-purple mb-4">
-                Công Cụ Sáng Tạo Video AI
+            <h1 className="animated-gradient-text text-4xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-brand-light-purple mb-6 max-w-4xl mx-auto leading-tight">
+                Tsoft 2 - Tool tạo prompt video veo3 hàng loạt
             </h1>
-            <p className="max-w-3xl mx-auto text-lg md:text-xl text-dark-text-secondary mb-12">
-                Biến kịch bản thành những thước phim sống động. Tự động hoá quy trình, đồng nhất nhân vật, và xuất bản hàng loạt video chất lượng cao cho Youtube.
-            </p>
+            <h2 className="text-lg md:text-xl text-dark-text-secondary max-w-3xl mx-auto mb-12">
+                Đồng nhất nhân vật và ảnh minh hoạ bám theo kịch bản storyboard
+            </h2>
         </section>
 
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">

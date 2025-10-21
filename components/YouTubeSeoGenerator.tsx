@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { generateYouTubeSeo } from '../services/geminiService';
 import { YouTubeSeoResult } from '../types';
 import Loader from './Loader';
+import PageHeader from './PageHeader';
 
 interface YouTubeSeoGeneratorProps {
   onGoHome: () => void;
@@ -66,14 +67,7 @@ const YouTubeSeoGenerator: React.FC<YouTubeSeoGeneratorProps> = ({ onGoHome }) =
         <div className="animate-fade-in max-w-4xl mx-auto">
             {isLoading && <Loader message="AI đang sáng tạo nội dung SEO..." />}
             
-            <div className="text-center mb-10">
-                <h1 className="animated-gradient-text text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-brand-light-purple mb-4">
-                    Tạo Tiêu Đề, Mô Tả & Thẻ Tag Chuẩn SEO
-                </h1>
-                <p className="max-w-2xl mx-auto text-lg text-dark-text-secondary">
-                    Cung cấp thông tin và để AI tạo ra nội dung SEO tối ưu cho video YouTube của bạn.
-                </p>
-            </div>
+            <PageHeader title="Viết tiêu đề chuẩn SEO Youtube" onBack={onGoHome} />
 
             {error && (
                 <div className="my-4 text-center bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded-lg" role="alert">
@@ -169,15 +163,12 @@ const YouTubeSeoGenerator: React.FC<YouTubeSeoGeneratorProps> = ({ onGoHome }) =
                 </div>
             )}
             
-            <div className="text-center mt-8 flex justify-center items-center gap-4">
+            <div className="text-center mt-8">
                 {(seoResult || error) && (
                      <button onClick={handleStartOver} className="py-2 px-5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
                         Làm lại
                     </button>
                 )}
-                <button onClick={onGoHome} className="py-2 px-5 bg-brand-purple text-white rounded-lg hover:bg-brand-light-purple transition-colors">
-                    Trở về Trang chủ
-                </button>
             </div>
         </div>
     );

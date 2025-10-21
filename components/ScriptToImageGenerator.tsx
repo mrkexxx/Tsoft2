@@ -1,11 +1,11 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import ScriptInput from './ScriptInput';
 import OptionsPanel from './OptionsPanel';
 import PromptList from './PromptList';
 import Loader from './Loader';
 import ImageViewer from './ImageViewer';
-import { ImageStyle, GeneratedPrompt, GeneratedImage } from '../types';
+import PageHeader from './PageHeader';
+import { GeneratedPrompt, GeneratedImage } from '../types';
 import { generatePromptsFromScript, generateImageFromPrompt } from '../services/geminiService';
 
 
@@ -18,7 +18,7 @@ const ScriptToImageGenerator: React.FC<ScriptToImageGeneratorProps> = ({ onGoHom
   const [fileName, setFileName] = useState<string | null>(null);
   const [durationMinutes, setDurationMinutes] = useState<number>(1);
   const [durationSeconds, setDurationSeconds] = useState<number>(0);
-  const [style, setStyle] = useState<ImageStyle>(ImageStyle.CINEMATIC);
+  const [style, setStyle] = useState<string>('Default');
   
   const [generatedPrompts, setGeneratedPrompts] = useState<GeneratedPrompt[]>([]);
   const [isLoadingPrompts, setIsLoadingPrompts] = useState<boolean>(false);
@@ -40,7 +40,7 @@ const ScriptToImageGenerator: React.FC<ScriptToImageGeneratorProps> = ({ onGoHom
     setFileName(null);
     setDurationMinutes(1);
     setDurationSeconds(0);
-    setStyle(ImageStyle.CINEMATIC);
+    setStyle('Default');
     setGeneratedPrompts([]);
     setError(null);
     setIsLoadingPrompts(false);
@@ -178,6 +178,8 @@ const ScriptToImageGenerator: React.FC<ScriptToImageGeneratorProps> = ({ onGoHom
 
   return (
     <div className="animate-fade-in">
+        <PageHeader title="Tạo hình ảnh theo kịch bản" onBack={onGoHome} />
+
         {(isLoadingPrompts || isGeneratingAllImages) && <Loader message={isGeneratingAllImages ? 'Đang tạo ảnh hàng loạt...' : 'Đang tạo prompts...'} />}
         {loadingImageScene && <Loader message={`Đang tạo ảnh cho ${loadingImageScene}...`} />}
         {viewingImage && <ImageViewer imageData={viewingImage.imageData} sceneName={viewingImage.sceneName} onClose={handleCloseViewer} />}
@@ -236,12 +238,9 @@ const ScriptToImageGenerator: React.FC<ScriptToImageGeneratorProps> = ({ onGoHom
               onViewImage={handleViewImage}
             />
 
-            <div className="text-center mt-8 flex justify-center items-center gap-4">
+            <div className="text-center mt-8">
                 <button onClick={handleStartOver} className="py-2 px-5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
                     Làm lại từ đầu
-                </button>
-                 <button onClick={onGoHome} className="py-2 px-5 bg-brand-purple text-white rounded-lg hover:bg-brand-light-purple transition-colors">
-                    Trở về Trang chủ
                 </button>
             </div>
            </div>

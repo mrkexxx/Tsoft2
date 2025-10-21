@@ -1,7 +1,7 @@
-
 import React, { useState, useRef } from 'react';
 import { generateThumbnailPromptFromImage, refineThumbnailPrompt } from '../services/geminiService';
 import Loader from './Loader';
+import PageHeader from './PageHeader';
 
 interface ThumbnailGeneratorProps {
   onGoHome: () => void;
@@ -97,14 +97,7 @@ const ThumbnailGenerator: React.FC<ThumbnailGeneratorProps> = ({ onGoHome }) => 
     <div className="animate-fade-in max-w-4xl mx-auto">
         {isLoading && <Loader message={loadingMessage} />}
         
-        <div className="text-center mb-10">
-            <h1 className="animated-gradient-text text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-brand-light-purple mb-4">
-                Tạo Prompt cho Thumbnail
-            </h1>
-            <p className="max-w-2xl mx-auto text-lg text-dark-text-secondary">
-                Tải lên một thumbnail, AI sẽ phân tích và tạo prompt chi tiết. Sau đó, bạn có thể chỉnh sửa hoặc yêu cầu AI tinh chỉnh prompt đó.
-            </p>
-        </div>
+        <PageHeader title="Tạo Thumbnail theo ảnh mẫu" onBack={onGoHome} />
 
         {error && (
             <div className="my-4 text-center bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded-lg" role="alert">
@@ -213,11 +206,6 @@ const ThumbnailGenerator: React.FC<ThumbnailGeneratorProps> = ({ onGoHome }) => 
                     Chỉnh sửa bằng AI
                 </button>
             </div>
-        </div>
-        <div className="text-center mt-8">
-            <button onClick={onGoHome} className="py-2 px-5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
-                Trở về Trang chủ
-            </button>
         </div>
     </div>
   );

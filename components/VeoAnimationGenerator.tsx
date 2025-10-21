@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Loader from './Loader';
+import PageHeader from './PageHeader';
 import { generateAnimationScenes, identifyCharactersFromScript, translateText } from '../services/geminiService';
 
 interface VeoAnimationGeneratorProps {
@@ -7,7 +8,6 @@ interface VeoAnimationGeneratorProps {
 }
 
 type Step = 'script' | 'characters' | 'scenes';
-type AnimationStyle = 'Điện ảnh' | 'Hoạt hình 3D';
 type ScriptLanguage = 'Tiếng Việt' | 'Tiếng Anh';
 
 interface Character {
@@ -16,8 +16,60 @@ interface Character {
     promptVietnamese: string;
 }
 
+const animationStyles = [
+  'Default',
+  'Điện ảnh',
+  'Hoạt hình 3D',
+  'Anime',
+  'Pixar',
+  'Disney',
+  'GTA V',
+  'Roblox',
+  'Minecraft',
+  'Fortnite',
+  'LEGO',
+  'Claymation',
+  'Watercolor',
+  'Synthwave',
+  'Steampunk',
+  'Cyberpunk',
+  'Art Nouveau',
+  'Minimalist',
+  'Sketch',
+  'Comic Book',
+  'Manga',
+  'Photorealistic',
+  'Surreal',
+  'Pop Art',
+  'Grunge',
+  'Neon Noir',
+  'Cottagecore',
+  'Dark Academia',
+  'Live Action',
+  'Hollywood',
+  'Documentary',
+  'Music Video',
+  'Commercial',
+  'Street Photo',
+  'Portrait',
+  'Fashion',
+  'Realistic',
+  'Bauhaus',
+  'Sci-Fi',
+  'Fantasy',
+  'Horror',
+  'Western',
+  'Apocalyptic',
+  'Y2K',
+  'Kawaii',
+  'Retro',
+  'Memphis',
+  'Brutalist',
+  'Ink Drawing',
+];
+
 const DownloadIcon: React.FC = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="http://www.w3.org/2000/svg" stroke="currentColor" strokeWidth={2}>
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
     </svg>
 );
@@ -84,8 +136,9 @@ const VeoAnimationGenerator: React.FC<VeoAnimationGeneratorProps> = ({ onGoHome 
   const [script, setScript] = useState('');
   const [durationMinutes, setDurationMinutes] = useState<number>(1);
   const [durationSeconds, setDurationSeconds] = useState<number>(0);
-  const [style, setStyle] = useState<AnimationStyle>('Điện ảnh');
+  const [style, setStyle] = useState<string>('Default');
   const [scriptLanguage, setScriptLanguage] = useState<ScriptLanguage>('Tiếng Việt');
+  const [characterNationality, setCharacterNationality] = useState<string>('Default');
 
   const [characters, setCharacters] = useState<Character[]>([]);
   
@@ -116,7 +169,7 @@ const VeoAnimationGenerator: React.FC<VeoAnimationGeneratorProps> = ({ onGoHome 
       setIsLoading(true);
       setLoadingMessage('AI đang phân tích kịch bản và xác định nhân vật...');
       try {
-        const identifiedChars = await identifyCharactersFromScript(script);
+        const identifiedChars = await identifyCharactersFromScript(script, characterNationality);
         
         if (identifiedChars && identifiedChars.length > 0) {
             setLoadingMessage('Đang dịch mô tả nhân vật...');
@@ -165,8 +218,9 @@ const VeoAnimationGenerator: React.FC<VeoAnimationGeneratorProps> = ({ onGoHome 
     setScript('');
     setDurationMinutes(1);
     setDurationSeconds(0);
-    setStyle('Điện ảnh');
+    setStyle('Default');
     setScriptLanguage('Tiếng Việt');
+    setCharacterNationality('Default');
     setCharacters([]);
     setGeneratedScenes([]);
     setIsLoading(false);
@@ -237,14 +291,31 @@ const VeoAnimationGenerator: React.FC<VeoAnimationGeneratorProps> = ({ onGoHome 
                     <select
                         id="style"
                         value={style}
-                        onChange={(e) => setStyle(e.target.value as AnimationStyle)}
+                        onChange={(e) => setStyle(e.target.value)}
                         className="w-full p-2 bg-gray-700 border border-dark-border rounded-md focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
                     >
-                        <option value="Điện ảnh">Điện ảnh</option>
-                        <option value="Hoạt hình 3D">Hoạt hình 3D</option>
+                        {animationStyles.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                 </div>
-                <div className="space-y-2 md:col-span-2">
+                 <div className="space-y-2">
+                    <label htmlFor="nationality" className="block text-md font-medium text-dark-text-secondary">
+                        Quốc tịch nhân vật
+                    </label>
+                    <select
+                        id="nationality"
+                        value={characterNationality}
+                        onChange={(e) => setCharacterNationality(e.target.value)}
+                        className="w-full p-2 bg-gray-700 border border-dark-border rounded-md focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
+                    >
+                        <option value="Default">Mặc định (AI tự nhận diện)</option>
+                        <option value="Châu Âu">Châu Âu</option>
+                        <option value="Châu Á">Châu Á</option>
+                        <option value="Châu Phi">Châu Phi</option>
+                        <option value="Nam Mỹ">Nam Mỹ</option>
+                    </select>
+                     <p className="text-xs text-dark-text-secondary mt-1">Áp dụng cho tất cả nhân vật trong kịch bản.</p>
+                </div>
+                <div className="space-y-2">
                     <label htmlFor="language" className="block text-md font-medium text-dark-text-secondary">
                         Ngôn ngữ kịch bản & thoại
                     </label>
@@ -352,6 +423,7 @@ const VeoAnimationGenerator: React.FC<VeoAnimationGeneratorProps> = ({ onGoHome 
 
   return (
     <div className="animate-fade-in max-w-4xl mx-auto">
+      <PageHeader title="Tạo prompt Veo3 hàng loạt" onBack={onGoHome} />
       {isLoading && <Loader message={loadingMessage} />}
       <div className="bg-dark-card p-4 sm:p-8 rounded-xl shadow-2xl border border-dark-border">
         <StepIndicator currentStep={currentStep} completedSteps={completedSteps} onStepClick={handleStepClick} />
@@ -363,15 +435,12 @@ const VeoAnimationGenerator: React.FC<VeoAnimationGeneratorProps> = ({ onGoHome 
         )}
         {renderStepContent()}
       </div>
-      <div className="text-center mt-8 flex justify-center items-center gap-4">
+      <div className="text-center mt-8">
         {currentStep !== 'script' && (
              <button onClick={handleStartOver} className="py-2 px-5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
                 Làm lại từ đầu
             </button>
         )}
-        <button onClick={onGoHome} className="py-2 px-5 bg-brand-purple text-white rounded-lg hover:bg-brand-light-purple transition-colors">
-            Trở về Trang chủ
-        </button>
       </div>
     </div>
   );

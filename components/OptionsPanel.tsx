@@ -1,19 +1,72 @@
-
 import React from 'react';
-import { ImageStyle } from '../types';
 
 interface OptionsPanelProps {
   durationMinutes: number;
   setDurationMinutes: (duration: number) => void;
   durationSeconds: number;
   setDurationSeconds: (duration: number) => void;
-  style: ImageStyle;
-  setStyle: (style: ImageStyle) => void;
+  style: string;
+  setStyle: (style: string) => void;
   onGeneratePrompts: () => void;
   isLoadingPrompts: boolean;
   scriptIsEmpty: boolean;
   disabled?: boolean;
 }
+
+const imageStyles = [
+  'Default',
+  'Điện ảnh (Cinematic)',
+  'Hoạt hình (Animation)',
+  'Tranh vẽ thuỷ mặc',
+  'Vibe cổ họa Việt Nam',
+  'Người que (Stick Figure)',
+  'Anime',
+  'Pixar',
+  'Disney',
+  'GTA V',
+  'Roblox',
+  'Minecraft',
+  'Fortnite',
+  'LEGO',
+  'Claymation',
+  'Watercolor',
+  'Synthwave',
+  'Steampunk',
+  'Cyberpunk',
+  'Art Nouveau',
+  'Minimalist',
+  'Sketch',
+  'Comic Book',
+  'Manga',
+  'Photorealistic',
+  'Surreal',
+  'Pop Art',
+  'Grunge',
+  'Neon Noir',
+  'Cottagecore',
+  'Dark Academia',
+  'Live Action',
+  'Hollywood',
+  'Documentary',
+  'Music Video',
+  'Commercial',
+  'Street Photo',
+  'Portrait',
+  'Fashion',
+  'Realistic',
+  'Bauhaus',
+  'Sci-Fi',
+  'Fantasy',
+  'Horror',
+  'Western',
+  'Apocalyptic',
+  'Y2K',
+  'Kawaii',
+  'Retro',
+  'Memphis',
+  'Brutalist',
+  'Ink Drawing',
+];
 
 const LightningIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -88,11 +141,11 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({
         <select
           id="style"
           value={style}
-          onChange={(e) => setStyle(e.target.value as ImageStyle)}
+          onChange={(e) => setStyle(e.target.value)}
           className="w-full p-2 bg-gray-700 border border-dark-border rounded-md focus:ring-2 focus:ring-brand-purple focus:border-brand-purple disabled:opacity-50"
           disabled={disabled}
         >
-          {Object.values(ImageStyle).map((s) => (
+          {imageStyles.map((s) => (
             <option key={s} value={s}>
               {s}
             </option>

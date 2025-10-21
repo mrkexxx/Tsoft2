@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { GeneratedPrompt, ImageStyle, YouTubeSeoResult } from '../types';
+import { GeneratedPrompt, YouTubeSeoResult } from '../types';
 
 const getAiClient = () => {
     const apiKey = localStorage.getItem('gemini-api-key');
@@ -9,27 +9,30 @@ const getAiClient = () => {
     return new GoogleGenAI({ apiKey });
 };
 
-const getStyleInstruction = (style: ImageStyle): string => {
-  switch (style) {
-    case ImageStyle.CINEMATIC:
-      return 'cinematic style, dramatic lighting, hyperrealistic, 8k, movie still, 16:9 aspect ratio';
-    case ImageStyle.ANIMATION:
-      return 'vibrant 3D animation style, Pixar inspired, detailed characters, colorful, 16:9 aspect ratio';
-    case ImageStyle.INK_WASH:
-      return 'Chinese ink wash painting style, minimalist, elegant brushstrokes, traditional art, high contrast, 16:9 aspect ratio';
-    case ImageStyle.VIETNAMESE_ANTIQUE:
-      return 'Vietnamese antique art style, reminiscent of Nguyen dynasty woodblock prints and lacquer paintings (sơn mài), traditional color palette, detailed cultural attire (like áo dài) and architecture, 16:9 aspect ratio';
-    case ImageStyle.STICK_FIGURE:
-        return 'simple stick figure drawing style, minimalist, black and white, clean lines, expressive poses, on a plain white background, 16:9 aspect ratio';
-    default:
+const getStyleInstruction = (style: string): string => {
+  const styleMap: { [key: string]: string } = {
+    'Điện ảnh (Cinematic)': 'cinematic style, dramatic lighting, hyperrealistic, 8k, movie still, 16:9 aspect ratio',
+    'Hoạt hình (Animation)': 'vibrant 3D animation style, Pixar inspired, detailed characters, colorful, 16:9 aspect ratio',
+    'Tranh vẽ thuỷ mặc': 'Chinese ink wash painting style, minimalist, elegant brushstrokes, traditional art, high contrast, 16:9 aspect ratio',
+    'Vibe cổ họa Việt Nam': 'Vietnamese antique art style, reminiscent of Nguyen dynasty woodblock prints and lacquer paintings (sơn mài), traditional color palette, detailed cultural attire (like áo dài) and architecture, 16:9 aspect ratio',
+    'Người que (Stick Figure)': 'simple stick figure drawing style, minimalist, black and white, clean lines, expressive poses, on a plain white background, 16:9 aspect ratio',
+  };
+
+  if (styleMap[style]) {
+    return styleMap[style];
+  }
+  
+  if (style === 'Default') {
       return '';
   }
+
+  return `${style} style, 16:9 aspect ratio`;
 };
 
 export const generatePromptsFromScript = async (
   script: string,
   numberOfPrompts: number,
-  style: ImageStyle,
+  style: string,
   duration: number,
 ): Promise<GeneratedPrompt[]> => {
   const ai = getAiClient();
@@ -236,24 +239,40 @@ export const refineThumbnailPrompt = async (
   }
 };
 
-export const identifyCharactersFromScript = async (script: string): Promise<{ name: string; prompt: string }[]> => {
+export const identifyCharactersFromScript = async (script: string, characterNationality: string): Promise<{ name: string; prompt: string }[]> => {
   const ai = getAiClient();
   try {
+    const nationalityMap: { [key: string]: string } = {
+        'Châu Âu': 'European',
+        'Châu Á': 'Asian',
+        'Châu Phi': 'African',
+        'Nam Mỹ': 'South American',
+    };
+    const englishNationality = nationalityMap[characterNationality];
+
+    let mainInstruction;
+
+    if (englishNationality) {
+        mainInstruction = `The user has specified a fixed nationality. Your task is to:
+    1.  Read the script to identify all distinct characters.
+    2.  For EACH character, you MUST assign them the nationality of **${englishNationality}**.
+    3.  You MUST IGNORE any clues in the script (like names, locations, or cultural references) that contradict this specified nationality.
+    4.  Create a detailed prompt for each character based on their assigned nationality, describing their culturally-appropriate physical features (face, hair, eyes), age (inferred from script), clothing, and personality.`;
+    } else { // 'Default' case
+        mainInstruction = `Your task is to perform a deep contextual analysis:
+    1.  Read the entire script to identify all distinct characters.
+    2.  For EACH character, you MUST infer their most likely nationality or ethnicity based on clues in the script (names, locations, cultural references).
+    3.  Create a detailed prompt for each character based on their inferred nationality, describing their culturally-appropriate physical features (face, hair, eyes), age (inferred from script), clothing, and personality.`;
+    }
+
     const systemInstruction = `You are an expert character designer and cultural anthropologist for generative AI. Your task is to analyze a VIETNAMESE script and create a definitive, detailed, and culturally accurate "character sheet" prompt in ENGLISH for each character. This description will be FIXED and used for all subsequent media generation.
 
-    **CRITICAL INSTRUCTIONS & ANALYSIS PROCESS:**
+    **CRITICAL INSTRUCTIONS:**
+    ${mainInstruction}
 
-    1.  **Deep Contextual Analysis (Mandatory First Step):** Before describing any character, you MUST analyze the entire script. Look for clues like:
-        *   **Names:** (e.g., 'Nguyễn' suggests Vietnamese, 'John' suggests Western, 'Kenji' suggests Japanese).
-        *   **Locations:** (e.g., mentions of Hanoi, Paris, Tokyo).
-        *   **Cultural References:** (e.g., Tết holiday, Thanksgiving, specific foods or traditions).
-    2.  **Infer Nationality/Ethnicity:** Based on your analysis, you MUST infer the character's most likely nationality or ethnicity. This inference is the foundation for their entire description.
-    3.  **Construct the Character Prompt:** For each character identified, construct a single, comprehensive paragraph in ENGLISH. This prompt MUST be directly informed by the inferred nationality and include the following, ensuring cultural accuracy:
-        a.  **Age & Inferred Nationality:** Specify their age and the nationality you deduced.
-        b.  **Culturally-Appropriate Features:** Describe their face shape, eyes, hair, and typical skin tone. **This is crucial.** The features must be consistent with their inferred ethnicity. For example, a character inferred to be Vietnamese should be described with features common to that ethnicity, unless the script explicitly states otherwise.
-        c.  **Outfit:** Describe their typical clothing. If the context suggests it, include culturally specific attire (e.g., áo dài for a Vietnamese character in a formal setting).
-        d.  **Personality:** Briefly describe their core personality.
-        e.  **Accessories:** Detail any signature accessories they carry or wear.
+    **PROMPT CONSTRUCTION RULES FOR EACH CHARACTER:**
+    - The final prompt must be a single, comprehensive paragraph in ENGLISH.
+    - It must include: Age & Nationality, Culturally-Appropriate Features, Outfit, Personality, and any signature Accessories.
 
     **FINAL OUTPUT FORMAT:**
     Your final output MUST be a JSON array of objects. Each object must contain two fields: "name" (the character's name in Vietnamese) and "prompt" (the final, combined, culturally-accurate description in English).
@@ -294,7 +313,7 @@ export const identifyCharactersFromScript = async (script: string): Promise<{ na
               },
               prompt: {
                 type: Type.STRING,
-                description: 'A detailed visual description of the character in English, following the 5-step process.',
+                description: 'A detailed visual description of the character in English, following the specified instructions.',
               },
             },
             required: ['name', 'prompt'],
@@ -326,7 +345,7 @@ export const generateAnimationScenes = async (
   characters: { name: string; prompt: string }[],
   durationMinutes: number,
   durationSeconds: number,
-  style: 'Điện ảnh' | 'Hoạt hình 3D',
+  style: string,
   language: 'Tiếng Việt' | 'Tiếng Anh'
 ): Promise<any[]> => {
   const ai = getAiClient();
@@ -351,9 +370,7 @@ export const generateAnimationScenes = async (
     **CRITICAL Instructions:**
     1.  **Adhere to Character Prompts:** You are given a definitive list of characters and their detailed descriptions. These are FIXED.
     2.  **Time Segmentation:** The total video duration is ${totalMinutes} minutes and ${remainingSeconds} seconds. You must divide the script into exactly ${numberOfScenes} sequential scenes. Each scene represents an 8-second segment of the video.
-    3.  **Visual Style:** All prompts MUST be tailored to a **${style}** style.
-        - If 'Điện ảnh' (Cinematic), think cinematic lighting, realistic textures, shallow depth of field, and dramatic camera angles.
-        - If 'Hoạt hình 3D' (3D Animation), think vibrant colors, stylized characters, fluid motion, and dynamic camera work inspired by modern animation studios like Pixar or Dreamworks.
+    3.  **Visual Style:** All prompts MUST be tailored to a **${style}** style. Incorporate the specific visual characteristics of this style into the scene descriptions and camera work.
     4.  **Output Format & Language:** For each scene, you must generate a JSON object with the following fields:
         a.  **sceneName (string):** A descriptive name for the scene in ${sceneNameLanguage}, including the time code. Format: ${sceneNameFormat}.
         b.  **mainEvents (string):** ${mainEventsInstruction}
