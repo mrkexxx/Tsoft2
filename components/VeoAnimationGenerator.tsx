@@ -20,6 +20,7 @@ const animationStyles = [
   'Default',
   'Điện ảnh',
   'Hoạt hình 3D',
+  'Người que (Stick Figure)',
   'Anime',
   'Pixar',
   'Disney',
