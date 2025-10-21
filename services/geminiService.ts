@@ -475,20 +475,55 @@ export const translateText = async (text: string, targetLanguage: string = 'Viet
 export const generateYouTubeSeo = async (
   channelName: string,
   videoContent: string,
+  language: 'Tiếng Việt' | 'Tiếng Anh'
 ): Promise<YouTubeSeoResult> => {
   const ai = getAiClient();
   try {
-    const systemInstruction = `You are a world-class YouTube SEO expert and copywriter, specializing in the VidIQ methodology, writing in VIETNAMESE. Your task is to analyze the user's channel name and video content to generate highly optimized SEO metadata.
+    const outputLanguage = language === 'Tiếng Việt' ? 'VIETNAMESE' : 'ENGLISH';
+    
+    const systemInstruction = `You are a world-class YouTube SEO expert and copywriter, specializing in the VidIQ methodology, writing in ${outputLanguage}. Your task is to analyze the user's channel name and video content to generate highly optimized SEO metadata based on the provided VidIQ guidelines.
+
+    **VidIQ SEO Guidelines (Aim for a score of 45-50/50):**
+    1.  **Main Keyword:** Identify a main keyword from the video content.
+    2.  **Keyword Placement:** The main keyword MUST appear in the Title, appear naturally 2-3 times in the Description, and be included in the Keywords/Tags.
+    3.  **Title:** Must contain the main keyword.
+    4.  **Description:** Must be over 250 characters. It should repeat the main keyword naturally.
+    5.  **Keywords/Tags:** The list should contain 10-15 relevant tags, including the main keyword and related long-tail keywords.
 
     **CRITICAL Instructions:**
-    1.  **Language:** All output MUST be in VIETNAMESE.
-    2.  **Titles (Tiêu đề):** Generate exactly 5 compelling, clickable, and SEO-optimized titles. The titles should be engaging and relevant to the video content.
-    3.  **Description (Mô tả):** Write a detailed, engaging video description. It must include a strong hook at the beginning, a summary of the video content, and relevant calls-to-action (like subscribing or watching another video).
-    4.  **Hashtags (Hashtag):** Provide a single block of relevant hashtags. Include a mix of broad and specific tags. Start each tag with '#'.
-    5.  **Keywords (Từ khoá):** Provide a comma-separated list of keywords optimized for high search volume and low competition, as would be recommended by a tool like VidIQ. These keywords are for the YouTube tags section.
+    1.  **Language:** All output (titles, description, keywords) MUST be in ${outputLanguage}.
+    2.  **Titles (Tiêu đề):** Generate exactly 5 compelling, clickable, and SEO-optimized titles that follow the guidelines.
+    3.  **Description (Mô tả):** Write a detailed, engaging, and professionally formatted video description in ${outputLanguage} (over 250 characters). It must be visually appealing and easy to read. Structure it with the following elements, using emojis to enhance readability:
+        - **Strong Hook (Câu Mở Đầu Hấp Dẫn):** Start with 1-2 compelling sentences that grab the viewer's attention and contain the main keyword.
+        - **Detailed Summary (Tóm Tắt Chi Tiết):** Provide a clear summary of the video's content. Use bullet points (e.g., with ✅, 💡, 🚀) to list key topics or benefits covered in the video.
+        - **Keyword Integration:** Naturally integrate the main keyword 2-3 times throughout the hook and summary.
+        - **Calls to Action (Kêu Gọi Hành Động):** Encourage viewers to LIKE, SUBSCRIBE, and COMMENT. Phrase this engagingly.
+        - **Social/Contact Links (Liên Kết):** Include a section with placeholders for social media and contact info, like "► Kết nối với ${channelName}:\\n- Facebook: [Link Facebook của bạn]\\n- Zalo: [Số Zalo của bạn]".
+        - **Clarity & Spacing:** Use ample white space and clear headings to separate sections.
+        - **Hashtags:** At the very end of the description, add a block of relevant hashtags. The first 3 hashtags MUST be based on the main keyword. The remaining hashtags should be related secondary keywords.
+    4.  **Keywords (Từ khoá):** Provide a comma-separated list of 10-15 keywords optimized for high search volume and low competition, as recommended by VidIQ.
+    5.  **Output Format:** Your final output must be in a JSON format.`;
 
-    Your final output must be in a JSON format.`;
-
+    const responseSchema: any = {
+      type: Type.OBJECT,
+      properties: {
+        titles: {
+          type: Type.ARRAY,
+          items: { type: Type.STRING },
+          description: `An array of 5 SEO-optimized video titles in ${outputLanguage}.`
+        },
+        description: {
+          type: Type.STRING,
+          description: `A detailed video description in ${outputLanguage}, over 250 characters, including a hashtag block at the end, following VidIQ guidelines.`
+        },
+        keywords: {
+          type: Type.STRING,
+          description: `A comma-separated list of 10-15 VidIQ-optimized keywords in ${outputLanguage}.`
+        }
+      },
+      required: ['titles', 'description', 'keywords']
+    };
+    
     const userContent = `
     **Tên kênh:** ${channelName}
     **Nội dung video:**
@@ -505,29 +540,7 @@ export const generateYouTubeSeo = async (
       config: {
         systemInstruction,
         responseMimeType: 'application/json',
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            titles: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING },
-              description: 'An array of 5 SEO-optimized video titles in Vietnamese.'
-            },
-            description: {
-              type: Type.STRING,
-              description: 'A detailed video description in Vietnamese.'
-            },
-            hashtags: {
-              type: Type.STRING,
-              description: 'A block of relevant hashtags in Vietnamese, each starting with #.'
-            },
-            keywords: {
-              type: Type.STRING,
-              description: 'A comma-separated list of VidIQ-optimized keywords in Vietnamese.'
-            }
-          },
-          required: ['titles', 'description', 'hashtags', 'keywords']
-        }
+        responseSchema,
       }
     });
 

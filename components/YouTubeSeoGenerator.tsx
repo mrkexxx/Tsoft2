@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { generateYouTubeSeo } from '../services/geminiService';
+import { generateYouTubeSeo, translateText } from '../services/geminiService';
 import { YouTubeSeoResult } from '../types';
 import Loader from './Loader';
 import PageHeader from './PageHeader';
@@ -26,9 +26,15 @@ const CopyIcon: React.FC<{isCopied: boolean}> = ({ isCopied }) => {
 const YouTubeSeoGenerator: React.FC<YouTubeSeoGeneratorProps> = ({ onGoHome }) => {
     const [channelName, setChannelName] = useState('');
     const [videoContent, setVideoContent] = useState('');
+    const [language, setLanguage] = useState<'Tiếng Việt' | 'Tiếng Anh'>('Tiếng Việt');
     const [isLoading, setIsLoading] = useState(false);
+    const [isTranslating, setIsTranslating] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    
     const [seoResult, setSeoResult] = useState<YouTubeSeoResult | null>(null);
+    const [editableDescription, setEditableDescription] = useState<string>('');
+    const [translatedDescription, setTranslatedDescription] = useState<string | null>(null);
+
     const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
     const handleGenerate = async () => {
@@ -39,15 +45,33 @@ const YouTubeSeoGenerator: React.FC<YouTubeSeoGeneratorProps> = ({ onGoHome }) =
         setIsLoading(true);
         setError(null);
         setSeoResult(null);
+        setEditableDescription('');
+        setTranslatedDescription(null);
         try {
-            const result = await generateYouTubeSeo(channelName, videoContent);
+            const result = await generateYouTubeSeo(channelName, videoContent, language);
             setSeoResult(result);
+            setEditableDescription(result.description);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Đã xảy ra lỗi không xác định.');
         } finally {
             setIsLoading(false);
         }
     };
+
+    const handleTranslateDescription = async () => {
+        if (!editableDescription) return;
+        setIsTranslating(true);
+        setError(null);
+        try {
+            const translation = await translateText(editableDescription, 'Vietnamese');
+            setTranslatedDescription(translation);
+        } catch (err) {
+            setError('Lỗi khi dịch mô tả.');
+        } finally {
+            setIsTranslating(false);
+        }
+    };
+
 
     const handleCopy = (text: string, key: string) => {
         navigator.clipboard.writeText(text).then(() => {
@@ -61,11 +85,14 @@ const YouTubeSeoGenerator: React.FC<YouTubeSeoGeneratorProps> = ({ onGoHome }) =
         setVideoContent('');
         setSeoResult(null);
         setError(null);
+        setLanguage('Tiếng Việt');
+        setEditableDescription('');
+        setTranslatedDescription(null);
     };
 
     return (
         <div className="animate-fade-in max-w-4xl mx-auto">
-            {isLoading && <Loader message="AI đang sáng tạo nội dung SEO..." />}
+            {(isLoading || isTranslating) && <Loader message={isTranslating ? "Đang dịch..." : "AI đang sáng tạo nội dung SEO..."} />}
             
             <PageHeader title="Viết tiêu đề chuẩn SEO Youtube" onBack={onGoHome} />
 
@@ -99,6 +126,18 @@ const YouTubeSeoGenerator: React.FC<YouTubeSeoGeneratorProps> = ({ onGoHome }) =
                         className="w-full h-40 p-3 bg-gray-900/50 border border-dark-border rounded-lg resize-y focus:ring-2 focus:ring-brand-purple"
                     />
                 </div>
+                <div>
+                    <label htmlFor="language-select" className="block text-md font-medium text-dark-text-secondary mb-2">Ngôn ngữ đầu ra</label>
+                    <select
+                        id="language-select"
+                        value={language}
+                        onChange={(e) => setLanguage(e.target.value as 'Tiếng Việt' | 'Tiếng Anh')}
+                        className="w-full p-3 bg-gray-900/50 border border-dark-border rounded-lg focus:ring-2 focus:ring-brand-purple"
+                    >
+                        <option value="Tiếng Việt">Tiếng Việt</option>
+                        <option value="Tiếng Anh">Tiếng Anh</option>
+                    </select>
+                </div>
                 <button
                     onClick={handleGenerate}
                     disabled={isLoading}
@@ -130,24 +169,40 @@ const YouTubeSeoGenerator: React.FC<YouTubeSeoGeneratorProps> = ({ onGoHome }) =
                     {/* Mô tả */}
                     <div className="space-y-2">
                         <h3 className="text-xl font-semibold text-brand-light-purple">Mô tả video</h3>
-                        <div className="relative bg-gray-900/50 p-3 rounded-md">
-                             <p className="text-dark-text whitespace-pre-wrap">{seoResult.description}</p>
-                             <button onClick={() => handleCopy(seoResult.description, 'description')} className="absolute top-2 right-2 p-2 rounded-md hover:bg-gray-700 transition-colors" aria-label="Sao chép mô tả">
+                        <div className="relative">
+                             <textarea
+                                value={editableDescription}
+                                onChange={(e) => {
+                                    setEditableDescription(e.target.value);
+                                    setTranslatedDescription(null); // Clear translation if user edits
+                                }}
+                                className="w-full h-72 p-3 pr-12 bg-gray-900/50 border border-dark-border rounded-lg resize-y focus:ring-2 focus:ring-brand-purple"
+                             />
+                             <button onClick={() => handleCopy(editableDescription, 'description')} className="absolute top-2 right-2 p-2 rounded-md hover:bg-gray-700 transition-colors" aria-label="Sao chép mô tả">
                                 <CopyIcon isCopied={copiedKey === 'description'} />
                              </button>
                         </div>
+                        {language === 'Tiếng Anh' && (
+                            <div className="pt-2">
+                                <button
+                                    onClick={handleTranslateDescription}
+                                    disabled={isTranslating || !editableDescription}
+                                    className="w-full sm:w-auto flex items-center justify-center py-2 px-4 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:bg-gray-500"
+                                >
+                                    Dịch sang Tiếng Việt
+                                </button>
+                            </div>
+                        )}
                     </div>
-
-                    {/* Hashtags */}
-                    <div className="space-y-2">
-                        <h3 className="text-xl font-semibold text-brand-light-purple">Hashtags</h3>
-                         <div className="relative bg-gray-900/50 p-3 rounded-md">
-                             <p className="text-dark-text">{seoResult.hashtags}</p>
-                              <button onClick={() => handleCopy(seoResult.hashtags, 'hashtags')} className="absolute top-2 right-2 p-2 rounded-md hover:bg-gray-700 transition-colors" aria-label="Sao chép hashtags">
-                                <CopyIcon isCopied={copiedKey === 'hashtags'} />
-                             </button>
+                    
+                    {translatedDescription && (
+                         <div className="space-y-2">
+                            <h3 className="text-lg font-semibold text-cyan-400">Bản dịch (để tham khảo)</h3>
+                            <div className="bg-cyan-900/30 p-3 rounded-md border border-cyan-700/50">
+                                <p className="text-cyan-200 whitespace-pre-wrap">{translatedDescription}</p>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Từ khóa */}
                      <div className="space-y-2">

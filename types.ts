@@ -36,6 +36,5 @@ export interface Article {
 export interface YouTubeSeoResult {
   titles: string[];
   description: string;
-  hashtags: string;
   keywords: string;
 }
