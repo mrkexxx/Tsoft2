@@ -365,21 +365,33 @@ export const generateAnimationScenes = async (
         ? 'A concise summary of the key actions and events in the scene, written in VIETNAMESE.'
         : 'A concise summary of the key actions and events in the scene, written in ENGLISH.';
 
-    const systemInstruction = `You are an expert animation film producer. Your task is to process a script, a list of predefined character descriptions, a style, and a total duration to create a detailed scene breakdown for a film. The script's dialogue language is ${mainEventsLanguage}.
+    const systemInstruction = `You are an expert animation film producer. Your task is to process a script, character descriptions, style, and duration to create a detailed scene breakdown. The script's dialogue language is ${mainEventsLanguage}.
 
     **CRITICAL Instructions:**
-    1.  **Adhere to Character Prompts:** You are given a definitive list of characters and their detailed descriptions. These are FIXED.
-    2.  **Time Segmentation:** The total video duration is ${totalMinutes} minutes and ${remainingSeconds} seconds. You must divide the script into exactly ${numberOfScenes} sequential scenes. Each scene represents an 8-second segment of the video.
-    3.  **Visual Style:** All prompts MUST be tailored to a **${style}** style. Incorporate the specific visual characteristics of this style into the scene descriptions and camera work.
-    4.  **Output Format & Language:** For each scene, you must generate a JSON object with the following fields:
-        a.  **sceneName (string):** A descriptive name for the scene in ${sceneNameLanguage}, including the time code. Format: ${sceneNameFormat}.
-        b.  **mainEvents (string):** ${mainEventsInstruction}
-        c.  **charactersPresent (array of strings):** A list of the names of the characters who appear in this scene.
-        d.  **detailedVideoPrompt (string):** A comprehensive, detailed video prompt in ENGLISH. **This is the most important part:**
-            - **Start with the Scene Number:** The prompt MUST begin with its sequential scene number, followed by a period and a space (e.g., "1. ...", "2. ...").
-            - **Prepend Character Descriptions:** For EVERY character listed in 'charactersPresent', you MUST copy their ENTIRE, UNCHANGED, predefined character prompt and place it at the VERY BEGINNING of the \`detailedVideoPrompt\`, right after the scene number. If multiple characters are present, concatenate their full prompts together at the start.
-            - **Describe the Action:** After the character descriptions, describe the setting, character actions, emotions, camera movements (e.g., "close-up shot", "pan left", "dynamic tracking shot"), and overall mood for the 8-second clip.
-            - **Incorporate Style:** The entire prompt must adhere to the specified **${style}** visual style.
+    
+    1.  **Adhere to Character Prompts:** The provided character descriptions are FIXED and must be used as-is.
+    
+    2.  **Time Segmentation & Dialogue Handling:**
+        a.  The total video duration is ${totalMinutes} minutes and ${remainingSeconds} seconds.
+        b.  Divide the script into logical scenes. For each logical scene, analyze its dialogue.
+        c.  **PRESERVE DIALOGUE:** Dialogue from the script MUST be included in the video prompt in its ORIGINAL language (${mainEventsLanguage}). DO NOT summarize or translate the dialogue.
+        d.  **SPLIT LONG DIALOGUE:** If a character's single line of dialogue is longer than 80 characters, you MUST split that action into multiple, sequential 8-second video scenes.
+        e.  Each new sub-scene will contain a chunk of the dialogue (max 80 characters).
+        f.  **MAINTAIN CONTEXT:** When splitting, all resulting sub-scenes must maintain the same setting, characters, and overarching action to ensure continuity.
+        g.  The final number of scenes should approximate the target of ${numberOfScenes}, but can be more if splitting is necessary.
+    
+    3.  **Visual Style:** All prompts MUST be tailored to a **${style}** style.
+    
+    4.  **Output Format & Language (for each scene or sub-scene):**
+        You must generate a JSON object with the following fields:
+        a.  **sceneName (string):** A descriptive name in ${sceneNameLanguage}. Format: ${sceneNameFormat}. Adjust timecodes based on the 8s/scene rule.
+        b.  **mainEvents (string):** A summary of key actions in ${mainEventsLanguage}, including the specific dialogue chunk for this scene.
+        c.  **charactersPresent (array of strings):** Names of characters in this scene.
+        d.  **detailedVideoPrompt (string):** A comprehensive video prompt in ENGLISH, except for the dialogue.
+            - **Start with Scene Number:** Must begin with its sequential number (e.g., "1. ...").
+            - **Prepend Character Descriptions:** At the VERY BEGINNING, for EACH character present, copy their ENTIRE, UNCHANGED, predefined character prompt.
+            - **Describe Action & Dialogue:** After character descriptions, describe the setting, actions, emotions, and camera movements in ENGLISH. Then, embed the UNTRANSLATED dialogue chunk from the script.
+            - **Incorporate Style:** The entire prompt must adhere to the **${style}** visual style.
 
     Your final output must be a single JSON array containing all the scene objects.`;
 
@@ -397,7 +409,7 @@ export const generateAnimationScenes = async (
     Please generate the JSON scene breakdown based on the instructions.`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-2.5-pro',
       contents: userContent,
       config: {
         systemInstruction: systemInstruction,
@@ -421,7 +433,7 @@ export const generateAnimationScenes = async (
               },
               detailedVideoPrompt: { 
                 type: Type.STRING,
-                description: 'The detailed video prompt in English, prefixed with its sequential number (e.g., "1. [prompt text]").' 
+                description: 'The detailed video prompt in English (with original dialogue), prefixed with its sequential number (e.g., "1. [prompt text]").' 
               }
             },
             required: ['sceneName', 'mainEvents', 'charactersPresent', 'detailedVideoPrompt']
@@ -583,7 +595,7 @@ export const analyzeVideoFromFile = async (videoFile: File): Promise<VideoAnalys
         1.  **Summarize:** First, provide a concise overall summary of the video's content in VIETNAMESE.
         2.  **Identify Main Characters:** Watch the entire video and identify all main characters. For each character, create a unique name and a detailed visual description (appearance, clothing, key features) in ENGLISH. This description must be consistent and detailed enough for an image generation AI.
         3.  **Identify Scenes:** Break the video down into distinct scenes. A scene change is marked by a significant shift in location, time, or subject matter.
-        4.  **Describe Scenes:** For each scene, write a detailed description of the events and actions in VIETNAMESE.
+        4.  **Describe Scenes:** For each scene, write a detailed description of the events and actions in VIETNAMESE. **IMPORTANT:** If the scene contains dialogue, you MUST transcribe the dialogue verbatim in its original language (e.g., keep Vietnamese dialogue in Vietnamese, keep English dialogue in English) within the scene description.
         5.  **Output Format:** Your final output MUST be a JSON object with three fields: "summary" (string), "characters" (an array of objects, each with "name" and "description" strings), and "scenes" (an array of strings, where each string is a detailed description of one scene).
         `;
         
@@ -628,7 +640,7 @@ export const analyzeVideoFromFile = async (videoFile: File): Promise<VideoAnalys
                             type: Type.ARRAY,
                             items: {
                                 type: Type.STRING,
-                                description: 'A detailed description of a single scene in VIETNAMESE.'
+                                description: 'A detailed description of a single scene in VIETNAMESE. Dialogue should be transcribed in its original language.'
                             }
                         }
                     },
@@ -659,15 +671,33 @@ export const generateVeoPromptsFromScenes = async (analysisResult: VideoAnalysis
     try {
         const characterDefinitions = analysisResult.characters.map(c => `- ${c.name}: ${c.description}`).join('\n');
         
-        const systemInstruction = `You are an expert prompt engineer for the Veo3 text-to-video model. You will be given a list of predefined character descriptions (in ENGLISH) and a list of scene descriptions (in VIETNAMESE).
+        const systemInstruction = `You are an expert prompt engineer for the Veo3 text-to-video model. You will be given predefined character descriptions (in ENGLISH) and a list of scene descriptions. The scene descriptions are primarily in VIETNAMESE but may contain dialogue in other languages.
 
         **CRITICAL INSTRUCTIONS:**
-        1.  **Analyze Each Scene:** For EACH scene description from the user, you must determine if any of the predefined characters are present.
-        2.  **Translate & Enhance:** Translate the VIETNAMESE scene description into a highly detailed, cinematic, and evocative prompt in ENGLISH.
-        3.  **Prepend Character Descriptions:** If a character is present in the scene, you MUST prepend their ENTIRE, UNCHANGED, predefined character description to the very beginning of the prompt. If multiple characters are present, concatenate their full prompts at the start.
-        4.  **Combine Elements:** The final prompt should start with the character description(s) (if any), followed by the enhanced description of the action, setting, camera movement (e.g., "close-up shot", "pan left"), lighting, and mood.
-        5.  **Single Line:** Each generated prompt MUST be a single, continuous line of text. Do not use line breaks within a prompt.
-        6.  **Output Format:** Your final output MUST be a JSON array of strings. The number of strings in the array must exactly match the number of scene descriptions provided. Each string is one complete, final Veo3 prompt.
+
+        1.  **Process Each Scene:** For each scene description provided, perform the following steps.
+
+        2.  **Dialogue Handling & Splitting:**
+            a.  Identify any dialogue within the scene description. Dialogue is often in quotes or follows a character's name and a colon (e.g., "Hùng: ...").
+            b.  **PRESERVE DIALOGUE LANGUAGE:** The dialogue MUST remain in its original language (Vietnamese or English). DO NOT TRANSLATE IT.
+            c.  **SPLIT LONG DIALOGUE:** If the dialogue in a single scene is longer than 80 characters, you MUST split that scene into multiple, sequential sub-scenes.
+            d.  Each sub-scene will contain a portion of the dialogue, with each portion being a maximum of 80 characters.
+            e.  **MAINTAIN CONTEXT:** When splitting, ensure that all resulting sub-scenes carry over the original scene's context: the same characters, setting, and ongoing action. The only thing changing is the piece of dialogue being spoken.
+
+        3.  **Prompt Construction (for each scene or sub-scene):**
+            a.  **Translate Non-Dialogue:** Translate ONLY the non-dialogue parts of the scene description (actions, setting, mood) into highly descriptive, cinematic ENGLISH.
+            b.  **Character Prepending:** Identify which predefined characters are present. Prepend their ENTIRE, UNCHANGED, predefined character description(s) to the very beginning of the prompt.
+            c.  **Combine:** Create the final prompt by combining:
+                - The prepended character description(s).
+                - The translated cinematic description of the setting and action.
+                - The original, untranslated dialogue chunk for that scene/sub-scene.
+                - Add details about camera movement (e.g., "close-up shot", "pan left"), lighting, and mood.
+
+        4.  **Final Output:**
+            a.  Your final output MUST be a JSON array of strings.
+            b.  Each string in the array is one complete, final Veo3 prompt for a single scene or sub-scene.
+            c.  The number of prompts in the output array may be greater than the number of initial scenes if splitting occurred.
+            d.  Each prompt MUST be a single, continuous line of text.
         `;
         
         const userContent = `
