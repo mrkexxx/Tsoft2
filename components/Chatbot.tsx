@@ -15,12 +15,14 @@ interface Message {
     text: string;
 }
 
+type ChatPhase = 'askingName' | 'askingGender' | 'chatting';
+
 const Chatbot: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState<Message[]>([
         {
             role: 'model',
-            text: 'Chào bạn! Tôi là Diệu Linh, trợ lý AI của anh Arsène Lupin, thuộc TifoTeam. Tôi có thể giúp bạn tìm hiểu về các tính năng của trang web. Bạn muốn biết về điều gì?'
+            text: 'Chào Anh/Chị, em là Diệu Linh, trợ lý AI của anh Arsène Lupin. Để tiện xưng hô, Anh/Chị cho em biết tên của mình là gì ạ?'
         }
     ]);
     const [userInput, setUserInput] = useState('');
@@ -29,18 +31,27 @@ const Chatbot: React.FC = () => {
     const messagesEndRef = useRef<HTMLDivElement | null>(null);
     const ai = getAiClient();
 
+    const [phase, setPhase] = useState<ChatPhase>('askingName');
+    const [userName, setUserName] = useState<string>('');
+
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, isLoading]);
 
-    const initializeChat = () => {
-        if (ai && !chatRef.current) {
-            const systemInstruction = `You are "Diệu Linh", the AI assistant for the Tsoft2 web application, created by Arsène Lupin. You are part of the TifoTeam. Your purpose is to explain the app's features to users in VIETNAMESE.
+    const initializeChat = (name: string, pronoun: 'anh' | 'chị') => {
+        if (ai) {
+             const systemInstruction = `You are "Diệu Linh", the AI assistant for the Tsoft2 web application, created by Arsène Lupin. You are part of the TifoTeam. Your purpose is to explain the app's features to users in VIETNAMESE.
 
             **Your Persona:**
             - Your name is Diệu Linh.
             - You are the assistant to Arsène Lupin, the author of this website.
             - You are a member of TifoTeam.
+            - You MUST always refer to yourself as "em".
+
+            **User's Information (CRITICAL):**
+            - The user's name is "${name}".
+            - You MUST address the user with the pronoun "${pronoun}".
+            - Address them as "${pronoun} ${name}" in greetings, and just "${pronoun}" in subsequent conversation. For example: "Dạ em chào ${pronoun} ${name}. Em có thể giúp gì cho ${pronoun} ạ?"
 
             **The app has four main features:**
             1.  **Tạo hình ảnh theo kịch bản:** Users upload a script, and the AI generates descriptive prompts and illustrative images for each scene.
@@ -50,89 +61,86 @@ const Chatbot: React.FC = () => {
 
             **CRITICAL Response Rules:**
             1.  **Language:** Always respond in VIETNAMESE.
-            2.  **Scope:** ONLY answer questions directly related to the features of the Tsoft2 website. If asked about anything else, you MUST politely decline and state your purpose. For example: "Tôi là Diệu Linh, trợ lý AI của TifoTeam. Tôi chỉ có thể hỗ trợ các câu hỏi liên quan đến tính năng của website Tsoft2 thôi ạ."
-            3.  **Zalo Group Promotion (MANDATORY):** Starting with your THIRD response to the user in the conversation (not counting your initial greeting), you MUST append the following text to the end of your answer: "Để được hỗ trợ chi tiết hơn và tham gia cộng đồng, bạn có thể vào nhóm Zalo này nhé: https://zalo.me/g/qnkofg173".
+            2.  **Scope:** ONLY answer questions directly related to the features of the Tsoft2 website. If asked about anything else, you MUST politely decline and state your purpose. For example: "Dạ em xin lỗi ${pronoun}, em là Diệu Linh, trợ lý AI của TifoTeam. Em chỉ có thể hỗ trợ các câu hỏi liên quan đến tính năng của website Tsoft2 thôi ạ."
+            3.  **Zalo Group Promotion (MANDATORY):** Starting with your THIRD response to the user in the conversation (not counting your initial setup messages), you MUST append the following text to the end of your answer: "Để được hỗ trợ chi tiết hơn và tham gia cộng đồng, ${pronoun} có thể vào nhóm Zalo này nhé: https://zalo.me/g/qnkofg173".
             4.  **Conciseness:** Keep your answers concise and easy to understand.`;
 
             chatRef.current = ai.chats.create({
                 model: 'gemini-2.5-flash',
-                config: {
-                    systemInstruction,
-                },
+                config: { systemInstruction },
             });
         }
     };
     
-    const handleToggle = () => {
-        setIsOpen(!isOpen);
-        if (!isOpen && !chatRef.current) {
-            initializeChat();
-        }
-    };
+    const handleToggle = () => setIsOpen(!isOpen);
 
     const handleSendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!userInput.trim() || isLoading || !chatRef.current) return;
+        if (!userInput.trim() || isLoading) return;
 
-        const userMessage: Message = { role: 'user', text: userInput };
+        const userMessageText = userInput;
+        const userMessage: Message = { role: 'user', text: userMessageText };
         setMessages(prev => [...prev, userMessage]);
         setUserInput('');
-        setIsLoading(true);
-
-        try {
-            const result = await chatRef.current.sendMessageStream({ message: userInput });
-            
-            let currentText = '';
-            setMessages(prev => [...prev, { role: 'model', text: '' }]);
-
-            for await (const chunk of result) {
-                currentText += chunk.text;
-                setMessages(prev => {
-                    const newMessages = [...prev];
-                    newMessages[newMessages.length - 1].text = currentText;
-                    return newMessages;
-                });
-            }
-        } catch (error) {
-            console.error("Lỗi khi gửi tin nhắn:", error);
-            setMessages(prev => [...prev, { role: 'model', text: 'Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại.' }]);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    
-    const sendSuggestedPrompt = async (prompt: string) => {
-        if (isLoading) return;
         
-        if (!isOpen) {
-            handleToggle();
-        }
-        
-        // Ensure chat is initialized before sending
-        if (!chatRef.current) {
-            initializeChat();
-            // Wait a bit for initialization, then proceed
+        if (phase === 'askingName') {
+            setUserName(userMessageText);
+            setPhase('askingGender');
             setTimeout(() => {
-                setUserInput(prompt);
-                // Manually trigger form submission logic
-                 const userMessage: Message = { role: 'user', text: prompt };
-                 setMessages(prev => [...prev, userMessage]);
-                 setUserInput('');
-                 setIsLoading(true);
-                 
-                 sendMessageToAI(prompt);
-            }, 500);
-        } else {
-             const userMessage: Message = { role: 'user', text: prompt };
-             setMessages(prev => [...prev, userMessage]);
-             setUserInput('');
-             setIsLoading(true);
-             sendMessageToAI(prompt);
+                setMessages(prev => [...prev, {
+                    role: 'model',
+                    text: `Dạ, ${userMessageText}. Bạn muốn em xưng hô là anh hay chị ạ?`
+                }]);
+            }, 300);
+            return;
+        }
+
+        if (phase === 'chatting' && chatRef.current) {
+            setIsLoading(true);
+            try {
+                const result = await chatRef.current.sendMessageStream({ message: userMessageText });
+                let currentText = '';
+                setMessages(prev => [...prev, { role: 'model', text: '' }]);
+
+                for await (const chunk of result) {
+                    currentText += chunk.text;
+                    setMessages(prev => {
+                        const newMessages = [...prev];
+                        newMessages[newMessages.length - 1].text = currentText;
+                        return newMessages;
+                    });
+                }
+            } catch (error) {
+                console.error("Lỗi khi gửi tin nhắn:", error);
+                setMessages(prev => [...prev, { role: 'model', text: 'Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại.' }]);
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
-    
-    const sendMessageToAI = async (prompt: string) => {
-        if (!chatRef.current) return;
+
+    const handleGenderSelect = (pronoun: 'anh' | 'chị') => {
+        const userChoiceMessage: Message = { role: 'user', text: `Em gọi là ${pronoun} nhé` };
+        setMessages(prev => [...prev, userChoiceMessage]);
+        
+        initializeChat(userName, pronoun);
+        setPhase('chatting');
+
+        setTimeout(() => {
+            setMessages(prev => [...prev, {
+                role: 'model',
+                text: `Dạ em chào ${pronoun} ${userName}. Em có thể giúp gì cho ${pronoun} về các tính năng của website ạ?`
+            }]);
+        }, 300);
+    };
+
+    const sendSuggestedPrompt = async (prompt: string) => {
+        if (isLoading || phase !== 'chatting' || !chatRef.current) return;
+        
+        const userMessage: Message = { role: 'user', text: prompt };
+        setMessages(prev => [...prev, userMessage]);
+        setIsLoading(true);
+        
         try {
             const result = await chatRef.current.sendMessageStream({ message: prompt });
             let currentText = '';
@@ -155,7 +163,49 @@ const Chatbot: React.FC = () => {
     };
 
 
-    if (!ai) return null; // Don't render if API key is not set
+    if (!ai) return null;
+
+    const renderInputArea = () => {
+        if (phase === 'askingGender') {
+            return (
+                <div className="p-4 border-t border-dark-border flex-shrink-0 flex items-center justify-center gap-4">
+                    <button 
+                        onClick={() => handleGenderSelect('anh')}
+                        className="py-2 px-6 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        Anh
+                    </button>
+                    <button 
+                        onClick={() => handleGenderSelect('chị')}
+                        className="py-2 px-6 bg-pink-600 text-white font-bold rounded-lg hover:bg-pink-700 transition-colors"
+                    >
+                        Chị
+                    </button>
+                </div>
+            );
+        }
+
+        return (
+            <form onSubmit={handleSendMessage} className="p-4 border-t border-dark-border flex-shrink-0">
+                <div className="flex items-center space-x-2">
+                    <input
+                        type="text"
+                        value={userInput}
+                        onChange={(e) => setUserInput(e.target.value)}
+                        placeholder={phase === 'askingName' ? 'Nhập tên của bạn...' : 'Hỏi tôi bất cứ điều gì...'}
+                        className="w-full p-2 bg-gray-700 border border-dark-border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
+                        disabled={isLoading}
+                        autoFocus
+                    />
+                    <button type="submit" className="bg-brand-purple text-white rounded-lg p-2 disabled:bg-gray-500" disabled={isLoading || !userInput.trim()}>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                        </svg>
+                    </button>
+                </div>
+            </form>
+        );
+    };
 
     return (
         <>
@@ -218,7 +268,7 @@ const Chatbot: React.FC = () => {
                     )}
                     <div ref={messagesEndRef} />
                     
-                    {messages.length <= 1 && !isLoading && (
+                    {phase === 'chatting' && messages.length === 5 && !isLoading && (
                         <div className="pt-4 space-y-2">
                              <button onClick={() => sendSuggestedPrompt('Tạo ảnh theo kịch bản là gì?')} className="w-full text-left text-sm p-2 bg-gray-700/50 rounded-md hover:bg-gray-700">Tạo ảnh theo kịch bản là gì?</button>
                              <button onClick={() => sendSuggestedPrompt('Tạo prompt Veo3 hoạt động thế nào?')} className="w-full text-left text-sm p-2 bg-gray-700/50 rounded-md hover:bg-gray-700">Tạo prompt Veo3 hoạt động thế nào?</button>
@@ -227,24 +277,8 @@ const Chatbot: React.FC = () => {
                     )}
 
                 </div>
-
-                <form onSubmit={handleSendMessage} className="p-4 border-t border-dark-border flex-shrink-0">
-                    <div className="flex items-center space-x-2">
-                        <input
-                            type="text"
-                            value={userInput}
-                            onChange={(e) => setUserInput(e.target.value)}
-                            placeholder="Hỏi tôi bất cứ điều gì..."
-                            className="w-full p-2 bg-gray-700 border border-dark-border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
-                            disabled={isLoading}
-                        />
-                        <button type="submit" className="bg-brand-purple text-white rounded-lg p-2 disabled:bg-gray-500" disabled={isLoading || !userInput.trim()}>
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                            </svg>
-                        </button>
-                    </div>
-                </form>
+                
+                {renderInputArea()}
             </div>
         </>
     );
