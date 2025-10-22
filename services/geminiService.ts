@@ -577,13 +577,14 @@ export const analyzeVideoFromFile = async (videoFile: File): Promise<VideoAnalys
     try {
         const videoPart = await fileToGenerativePart(videoFile);
         
-        const systemInstruction = `You are a professional video editor AI. Your task is to analyze a video and provide a structured breakdown.
+        const systemInstruction = `You are a professional film director AI. Your task is to analyze a video and provide a structured breakdown for pre-production.
         
         **CRITICAL INSTRUCTIONS:**
         1.  **Summarize:** First, provide a concise overall summary of the video's content in VIETNAMESE.
-        2.  **Identify Scenes:** Watch the entire video and identify every distinct scene. A scene change is marked by a significant shift in location, time, subject matter, or a clear camera cut to a new sequence.
-        3.  **Describe Scenes:** For each scene you identify, write a detailed description in VIETNAMESE.
-        4.  **Output Format:** Your final output MUST be a JSON object. It must contain two fields: "summary" (a string for the overall summary) and "scenes" (an array of strings, where each string is a detailed description of one scene in sequential order).
+        2.  **Identify Main Characters:** Watch the entire video and identify all main characters. For each character, create a unique name and a detailed visual description (appearance, clothing, key features) in ENGLISH. This description must be consistent and detailed enough for an image generation AI.
+        3.  **Identify Scenes:** Break the video down into distinct scenes. A scene change is marked by a significant shift in location, time, or subject matter.
+        4.  **Describe Scenes:** For each scene, write a detailed description of the events and actions in VIETNAMESE.
+        5.  **Output Format:** Your final output MUST be a JSON object with three fields: "summary" (string), "characters" (an array of objects, each with "name" and "description" strings), and "scenes" (an array of strings, where each string is a detailed description of one scene).
         `;
         
         const userContent = {
@@ -606,6 +607,23 @@ export const analyzeVideoFromFile = async (videoFile: File): Promise<VideoAnalys
                             type: Type.STRING,
                             description: 'A concise summary of the video in VIETNAMESE.',
                         },
+                        characters: {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    name: {
+                                        type: Type.STRING,
+                                        description: 'The name of a main character identified in the video.'
+                                    },
+                                    description: {
+                                        type: Type.STRING,
+                                        description: 'A detailed visual description of the character in ENGLISH.'
+                                    }
+                                },
+                                required: ['name', 'description']
+                            }
+                        },
                         scenes: {
                             type: Type.ARRAY,
                             items: {
@@ -614,7 +632,7 @@ export const analyzeVideoFromFile = async (videoFile: File): Promise<VideoAnalys
                             }
                         }
                     },
-                    required: ['summary', 'scenes']
+                    required: ['summary', 'characters', 'scenes']
                 }
             }
         });
@@ -636,22 +654,31 @@ export const analyzeVideoFromFile = async (videoFile: File): Promise<VideoAnalys
     }
 };
 
-export const generateVeoPromptsFromScenes = async (scenes: string[]): Promise<string[]> => {
+export const generateVeoPromptsFromScenes = async (analysisResult: VideoAnalysisResult): Promise<string[]> => {
     const ai = getAiClient();
     try {
-        const systemInstruction = `You are an expert prompt engineer for the Veo3 text-to-video model. You will be given a list of scene descriptions in VIETNAMESE.
+        const characterDefinitions = analysisResult.characters.map(c => `- ${c.name}: ${c.description}`).join('\n');
         
+        const systemInstruction = `You are an expert prompt engineer for the Veo3 text-to-video model. You will be given a list of predefined character descriptions (in ENGLISH) and a list of scene descriptions (in VIETNAMESE).
+
         **CRITICAL INSTRUCTIONS:**
-        1.  **Translate & Enhance:** For EACH scene description, translate its core meaning and enhance it into a highly detailed, cinematic, and evocative prompt in ENGLISH.
-        2.  **Prompt Style:** Prompts should be descriptive, focusing on visuals, camera movement, lighting, mood, and action. For example: "A dramatic wide shot of a lone astronaut standing on a desolate red planet, cinematic lighting, hyperrealistic, 8k, dust swirling in the thin atmosphere as two suns set on the horizon."
-        3.  **Single Line:** Each generated prompt MUST be a single, continuous line of text. Do not use line breaks within a prompt.
-        4.  **Output Format:** Your final output MUST be a JSON array of strings. The number of strings in the array must exactly match the number of scene descriptions provided. Each string is one complete Veo3 prompt.
+        1.  **Analyze Each Scene:** For EACH scene description from the user, you must determine if any of the predefined characters are present.
+        2.  **Translate & Enhance:** Translate the VIETNAMESE scene description into a highly detailed, cinematic, and evocative prompt in ENGLISH.
+        3.  **Prepend Character Descriptions:** If a character is present in the scene, you MUST prepend their ENTIRE, UNCHANGED, predefined character description to the very beginning of the prompt. If multiple characters are present, concatenate their full prompts at the start.
+        4.  **Combine Elements:** The final prompt should start with the character description(s) (if any), followed by the enhanced description of the action, setting, camera movement (e.g., "close-up shot", "pan left"), lighting, and mood.
+        5.  **Single Line:** Each generated prompt MUST be a single, continuous line of text. Do not use line breaks within a prompt.
+        6.  **Output Format:** Your final output MUST be a JSON array of strings. The number of strings in the array must exactly match the number of scene descriptions provided. Each string is one complete, final Veo3 prompt.
         `;
         
         const userContent = `
-        Please generate the Veo3 prompts based on these scene descriptions:
+        **Predefined Characters:**
         ---
-        ${JSON.stringify(scenes)}
+        ${characterDefinitions}
+        ---
+
+        **Scene Descriptions to Process:**
+        ---
+        ${JSON.stringify(analysisResult.scenes)}
         ---
         `;
 
@@ -665,7 +692,7 @@ export const generateVeoPromptsFromScenes = async (scenes: string[]): Promise<st
                     type: Type.ARRAY,
                     items: {
                         type: Type.STRING,
-                        description: 'A single, detailed Veo3 video prompt in ENGLISH.'
+                        description: 'A single, detailed Veo3 video prompt in ENGLISH, prepended with character descriptions if applicable.'
                     }
                 }
             }

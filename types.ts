@@ -41,5 +41,9 @@ export interface YouTubeSeoResult {
 
 export interface VideoAnalysisResult {
   summary: string;
+  characters: {
+    name: string;
+    description: string;
+  }[];
   scenes: string[];
 }

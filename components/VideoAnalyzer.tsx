@@ -82,7 +82,7 @@ const VideoAnalyzer: React.FC<VideoAnalyzerProps> = ({ onGoHome }) => {
         setVeoPrompts(null);
 
         try {
-            const prompts = await generateVeoPromptsFromScenes(analysisResult.scenes);
+            const prompts = await generateVeoPromptsFromScenes(analysisResult);
             setVeoPrompts(prompts);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Đã xảy ra lỗi không xác định khi tạo prompt.');
@@ -123,28 +123,39 @@ const VideoAnalyzer: React.FC<VideoAnalyzerProps> = ({ onGoHome }) => {
                 {/* Step 1: Upload */}
                 <div className="bg-dark-card p-6 rounded-lg border border-dark-border space-y-6">
                     <h2 className="text-2xl font-bold text-white">Bước 1: Tải lên và Phân tích Video</h2>
-                    <div 
-                        className="border-2 border-dashed border-dark-border rounded-lg p-8 text-center cursor-pointer hover:border-brand-purple transition-colors"
-                        onClick={() => fileInputRef.current?.click()}
-                    >
-                        <input
-                            type="file"
-                            accept="video/*"
-                            onChange={handleFileChange}
-                            className="hidden"
-                            ref={fileInputRef}
-                            aria-label="Tải lên video"
-                        />
-                        {videoPreviewUrl ? (
+                    
+                    <input
+                        type="file"
+                        accept="video/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                        ref={fileInputRef}
+                        aria-label="Tải lên video"
+                    />
+
+                    {videoPreviewUrl ? (
+                        <div className="text-center space-y-4">
                             <video src={videoPreviewUrl} controls className="max-h-64 mx-auto rounded-lg shadow-lg" />
-                        ) : (
+                            <button 
+                                onClick={() => fileInputRef.current?.click()}
+                                className="py-2 px-4 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                            >
+                                Tải lên video khác
+                            </button>
+                        </div>
+                    ) : (
+                        <div 
+                            className="border-2 border-dashed border-dark-border rounded-lg p-8 text-center cursor-pointer hover:border-brand-purple transition-colors"
+                            onClick={() => fileInputRef.current?.click()}
+                        >
                             <div>
                                 <UploadIcon />
                                 <p className="text-dark-text-secondary">Nhấn để tải lên video của bạn</p>
                                 <p className="text-xs text-gray-500 mt-1">MP4, MOV, WEBM, etc.</p>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
+                    
                     {videoFile && (
                         <p className="text-center text-dark-text-secondary">Tệp đã chọn: {videoFile.name}</p>
                     )}
@@ -165,6 +176,21 @@ const VideoAnalyzer: React.FC<VideoAnalyzerProps> = ({ onGoHome }) => {
                             <h3 className="text-xl font-semibold text-brand-light-purple mb-2">Tóm tắt chung</h3>
                             <p className="p-3 bg-gray-900/50 rounded-md text-dark-text">{analysisResult.summary}</p>
                         </div>
+
+                        {analysisResult.characters.length > 0 && (
+                            <div>
+                                <h3 className="text-xl font-semibold text-brand-light-purple mb-2">Nhân vật chính</h3>
+                                <div className="space-y-3">
+                                    {analysisResult.characters.map((char, index) => (
+                                        <div key={index} className="bg-gray-900/50 p-3 rounded-md">
+                                            <p className="font-bold text-white">{char.name}</p>
+                                            <p className="text-sm text-dark-text-secondary">{char.description}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         <div>
                             <h3 className="text-xl font-semibold text-brand-light-purple mb-2">Các phân cảnh đã xác định ({analysisResult.scenes.length})</h3>
                             <ul className="space-y-2 max-h-60 overflow-y-auto pr-2">
