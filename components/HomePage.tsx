@@ -5,6 +5,7 @@ interface HomePageProps {
   onNavigateToVeoAnimation: () => void;
   onNavigateToThumbnailGenerator: () => void;
   onNavigateToYouTubeSeo: () => void;
+  onNavigateToVideoAnalyzer: () => void;
 }
 
 // FIX: Replaced JSX.Element with React.ReactElement to resolve "Cannot find namespace 'JSX'" error.
@@ -56,7 +57,7 @@ const CommunityLink: React.FC<{ title: string; description: string; href: string
 );
 
 
-const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNavigateToVeoAnimation, onNavigateToThumbnailGenerator, onNavigateToYouTubeSeo }) => {
+const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNavigateToVeoAnimation, onNavigateToThumbnailGenerator, onNavigateToYouTubeSeo, onNavigateToVideoAnalyzer }) => {
     const defaultCommunityIcon = (
         <div className="bg-brand-purple/20 p-3 rounded-lg">
              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-brand-light-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -103,7 +104,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNaviga
             </h2>
         </section>
 
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <ToolCard 
             title="Tạo hình ảnh theo kịch bản"
             description="Tải lên kịch bản của bạn để tự động tạo prompt và hình ảnh minh họa cho từng phân cảnh."
@@ -143,6 +144,17 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNaviga
                 </svg>
             }
             onClick={onNavigateToYouTubeSeo}
+        />
+        <ToolCard 
+            title="Phân tích Video bằng AI"
+            description="Tải lên video để AI phân tích nội dung, xác định các phân cảnh chính và tạo prompt video."
+            icon={
+                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            }
+            onClick={onNavigateToVideoAnalyzer}
         />
       </div>
 

@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { GeneratedPrompt, YouTubeSeoResult } from '../types';
+import { GeneratedPrompt, YouTubeSeoResult, VideoAnalysisResult } from '../types';
 
 const getAiClient = () => {
     const apiKey = localStorage.getItem('gemini-api-key');
@@ -559,4 +559,131 @@ export const generateYouTubeSeo = async (
     }
     throw new Error("Đã xảy ra lỗi không xác định trong quá trình tạo dữ liệu SEO.");
   }
+};
+
+const fileToGenerativePart = async (file: File) => {
+  const base64EncodedDataPromise = new Promise<string>((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+    reader.readAsDataURL(file);
+  });
+  return {
+    inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
+  };
+};
+
+export const analyzeVideoFromFile = async (videoFile: File): Promise<VideoAnalysisResult> => {
+    const ai = getAiClient();
+    try {
+        const videoPart = await fileToGenerativePart(videoFile);
+        
+        const systemInstruction = `You are a professional video editor AI. Your task is to analyze a video and provide a structured breakdown.
+        
+        **CRITICAL INSTRUCTIONS:**
+        1.  **Summarize:** First, provide a concise overall summary of the video's content in VIETNAMESE.
+        2.  **Identify Scenes:** Watch the entire video and identify every distinct scene. A scene change is marked by a significant shift in location, time, subject matter, or a clear camera cut to a new sequence.
+        3.  **Describe Scenes:** For each scene you identify, write a detailed description in VIETNAMESE.
+        4.  **Output Format:** Your final output MUST be a JSON object. It must contain two fields: "summary" (a string for the overall summary) and "scenes" (an array of strings, where each string is a detailed description of one scene in sequential order).
+        `;
+        
+        const userContent = {
+            parts: [
+                videoPart,
+                { text: "Please analyze this video according to the system instructions." }
+            ]
+        };
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-pro',
+            contents: userContent,
+            config: {
+                systemInstruction,
+                responseMimeType: 'application/json',
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        summary: {
+                            type: Type.STRING,
+                            description: 'A concise summary of the video in VIETNAMESE.',
+                        },
+                        scenes: {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.STRING,
+                                description: 'A detailed description of a single scene in VIETNAMESE.'
+                            }
+                        }
+                    },
+                    required: ['summary', 'scenes']
+                }
+            }
+        });
+
+        const parsedResponse: VideoAnalysisResult = JSON.parse(response.text);
+
+        if (!parsedResponse || !parsedResponse.scenes || parsedResponse.scenes.length === 0) {
+            throw new Error("Không thể phân tích video hoặc không tìm thấy phân cảnh nào.");
+        }
+        
+        return parsedResponse;
+
+    } catch (error) {
+        console.error("Lỗi khi phân tích video:", error);
+        if (error instanceof Error) {
+            throw new Error(`Đã xảy ra lỗi: ${error.message}`);
+        }
+        throw new Error("Đã xảy ra lỗi không xác định trong quá trình phân tích video.");
+    }
+};
+
+export const generateVeoPromptsFromScenes = async (scenes: string[]): Promise<string[]> => {
+    const ai = getAiClient();
+    try {
+        const systemInstruction = `You are an expert prompt engineer for the Veo3 text-to-video model. You will be given a list of scene descriptions in VIETNAMESE.
+        
+        **CRITICAL INSTRUCTIONS:**
+        1.  **Translate & Enhance:** For EACH scene description, translate its core meaning and enhance it into a highly detailed, cinematic, and evocative prompt in ENGLISH.
+        2.  **Prompt Style:** Prompts should be descriptive, focusing on visuals, camera movement, lighting, mood, and action. For example: "A dramatic wide shot of a lone astronaut standing on a desolate red planet, cinematic lighting, hyperrealistic, 8k, dust swirling in the thin atmosphere as two suns set on the horizon."
+        3.  **Single Line:** Each generated prompt MUST be a single, continuous line of text. Do not use line breaks within a prompt.
+        4.  **Output Format:** Your final output MUST be a JSON array of strings. The number of strings in the array must exactly match the number of scene descriptions provided. Each string is one complete Veo3 prompt.
+        `;
+        
+        const userContent = `
+        Please generate the Veo3 prompts based on these scene descriptions:
+        ---
+        ${JSON.stringify(scenes)}
+        ---
+        `;
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-pro',
+            contents: userContent,
+            config: {
+                systemInstruction,
+                responseMimeType: 'application/json',
+                responseSchema: {
+                    type: Type.ARRAY,
+                    items: {
+                        type: Type.STRING,
+                        description: 'A single, detailed Veo3 video prompt in ENGLISH.'
+                    }
+                }
+            }
+        });
+
+        const parsedResponse: string[] = JSON.parse(response.text);
+
+        if (!parsedResponse || parsedResponse.length === 0) {
+            throw new Error("Không thể tạo prompt Veo3 từ các phân cảnh.");
+        }
+        
+        return parsedResponse;
+
+    } catch (error) {
+        console.error("Lỗi khi tạo prompts Veo3:", error);
+        if (error instanceof Error) {
+            throw new Error(`Đã xảy ra lỗi: ${error.message}`);
+        }
+        throw new Error("Đã xảy ra lỗi không xác định trong quá trình tạo prompts.");
+    }
 };

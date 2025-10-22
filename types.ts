@@ -38,3 +38,8 @@ export interface YouTubeSeoResult {
   description: string;
   keywords: string;
 }
+
+export interface VideoAnalysisResult {
+  summary: string;
+  scenes: string[];
+}

@@ -11,8 +11,9 @@ import ApiKeySetup from './components/ApiKeySetup';
 import { Article } from './types';
 import InfoPopup from './components/InfoPopup';
 import Chatbot from './components/Chatbot';
+import VideoAnalyzer from './components/VideoAnalyzer';
 
-type Page = 'home' | 'scriptToImage' | 'veoAnimation' | 'history' | 'articleDetail' | 'thumbnailGenerator' | 'youtubeSeo' | 'apiKeySetup';
+type Page = 'home' | 'scriptToImage' | 'veoAnimation' | 'history' | 'articleDetail' | 'thumbnailGenerator' | 'youtubeSeo' | 'apiKeySetup' | 'videoAnalyzer';
 
 const App: React.FC = () => {
   const [hasApiKey, setHasApiKey] = useState<boolean>(false);
@@ -63,6 +64,11 @@ const App: React.FC = () => {
     setSelectedArticle(null);
   };
 
+  const navigateToVideoAnalyzer = () => {
+    setCurrentPage('videoAnalyzer');
+    setSelectedArticle(null);
+  };
+
   const navigateHome = () => {
     setCurrentPage('home');
     setSelectedArticle(null);
@@ -85,7 +91,7 @@ const App: React.FC = () => {
   const renderPage = () => {
     switch (currentPage) {
         case 'home':
-            return <HomePage onNavigateToScriptToImage={navigateToScriptToImage} onNavigateToVeoAnimation={navigateToVeoAnimation} onNavigateToThumbnailGenerator={navigateToThumbnailGenerator} onNavigateToYouTubeSeo={navigateToYouTubeSeo} />;
+            return <HomePage onNavigateToScriptToImage={navigateToScriptToImage} onNavigateToVeoAnimation={navigateToVeoAnimation} onNavigateToThumbnailGenerator={navigateToThumbnailGenerator} onNavigateToYouTubeSeo={navigateToYouTubeSeo} onNavigateToVideoAnalyzer={navigateToVideoAnalyzer} />;
         case 'scriptToImage':
             return <ScriptToImageGenerator onGoHome={navigateHome} />;
         case 'veoAnimation':
@@ -94,6 +100,8 @@ const App: React.FC = () => {
             return <ThumbnailGenerator onGoHome={navigateHome} />;
         case 'youtubeSeo':
             return <YouTubeSeoGenerator onGoHome={navigateHome} />;
+        case 'videoAnalyzer':
+            return <VideoAnalyzer onGoHome={navigateHome} />;
         case 'history':
             return <HistoryPage onGoHome={navigateHome} onNavigateToArticle={navigateToArticleDetail} />;
         case 'articleDetail':
@@ -105,7 +113,7 @@ const App: React.FC = () => {
         case 'apiKeySetup':
             return <ApiKeySetup onSuccess={handleApiKeySuccess} />;
         default:
-            return <HomePage onNavigateToScriptToImage={navigateToScriptToImage} onNavigateToVeoAnimation={navigateToVeoAnimation} onNavigateToThumbnailGenerator={navigateToThumbnailGenerator} onNavigateToYouTubeSeo={navigateToYouTubeSeo} />;
+            return <HomePage onNavigateToScriptToImage={navigateToScriptToImage} onNavigateToVeoAnimation={navigateToVeoAnimation} onNavigateToThumbnailGenerator={navigateToThumbnailGenerator} onNavigateToYouTubeSeo={navigateToYouTubeSeo} onNavigateToVideoAnalyzer={navigateToVideoAnalyzer} />;
     }
   }
 
