@@ -33,7 +33,7 @@ const ToolCard: React.FC<{ title: string; description: string; icon: React.React
     );
 };
 
-const CommunityLink: React.FC<{ title: string; description: string; href: string }> = ({ title, description, href }) => (
+const CommunityLink: React.FC<{ title: string; description: string; href: string; icon: React.ReactElement; }> = ({ title, description, href, icon }) => (
     <a
         href={href}
         target="_blank"
@@ -41,10 +41,8 @@ const CommunityLink: React.FC<{ title: string; description: string; href: string
         className="group block bg-dark-card p-6 rounded-xl border border-dark-border hover:border-brand-light-purple/50 transition-all duration-300"
     >
         <div className="flex items-center">
-            <div className="flex-shrink-0 bg-brand-purple/20 p-3 rounded-lg mr-4">
-                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-brand-light-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
+            <div className="flex-shrink-0 mr-4">
+                 {icon}
             </div>
             <div className="flex-1">
                 <h4 className="font-bold text-lg text-white">{title}</h4>
@@ -59,26 +57,38 @@ const CommunityLink: React.FC<{ title: string; description: string; href: string
 
 
 const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNavigateToVeoAnimation, onNavigateToThumbnailGenerator, onNavigateToYouTubeSeo }) => {
+    const defaultCommunityIcon = (
+        <div className="bg-brand-purple/20 p-3 rounded-lg">
+             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-brand-light-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+        </div>
+    );
+    
     const communityLinks = [
         {
             title: "TifoShop - Shop tài nguyên MMO",
             description: "Cộng đồng mua bán, trao đổi tài nguyên cho dân MMO.",
-            href: "https://zalo.me/g/vskind805"
+            href: "https://zalo.me/g/vskind805",
+            icon: defaultCommunityIcon
         },
         {
             title: "Hỗ trợ tool VEO3",
             description: "Group hỗ trợ chính thức cho công cụ tạo video hàng loạt VEO3.",
-            href: "https://zalo.me/g/qnkofg173"
+            href: "https://zalo.me/g/qnkofg173",
+            icon: <img src="https://sf-static.upanhlaylink.com/img/image_202510216ca3829c10658dd7661449e675a09f05.jpg" alt="Hỗ trợ tool VEO3 logo" className="h-12 w-12 rounded-lg object-cover" />
         },
         {
             title: "Cộng đồng Youtube Tấn Văn",
             description: "Cùng học hỏi, chia sẻ kinh nghiệm xây dựng kênh Youtube.",
-            href: "https://zalo.me/g/tdhnzw234"
+            href: "https://zalo.me/g/tdhnzw234",
+            icon: defaultCommunityIcon
         },
         {
             title: "GoSpeedUp - Tiktok Affiliate",
             description: "Trao đổi kiến thức, kinh nghiệm làm Tiktok Affiliate.",
-            href: "https://zalo.me/g/qepmvz949"
+            href: "https://zalo.me/g/qepmvz949",
+            icon: defaultCommunityIcon
         }
     ];
 
@@ -159,7 +169,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNaviga
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {communityLinks.map((link, index) => (
-                    <CommunityLink key={index} title={link.title} description={link.description} href={link.href} />
+                    <CommunityLink key={index} title={link.title} description={link.description} href={link.href} icon={link.icon} />
                 ))}
             </div>
         </section>

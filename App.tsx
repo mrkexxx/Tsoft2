@@ -10,6 +10,7 @@ import YouTubeSeoGenerator from './components/YouTubeSeoGenerator';
 import ApiKeySetup from './components/ApiKeySetup';
 import { Article } from './types';
 import InfoPopup from './components/InfoPopup';
+import Chatbot from './components/Chatbot';
 
 type Page = 'home' | 'scriptToImage' | 'veoAnimation' | 'history' | 'articleDetail' | 'thumbnailGenerator' | 'youtubeSeo' | 'apiKeySetup';
 
@@ -118,6 +119,7 @@ const App: React.FC = () => {
       <footer className="text-center py-4 mt-8 border-t border-dark-border">
           <p className="text-sm text-dark-text-secondary">&copy; 2025 All rights reserved. được phát triển bởi Arsène Lupin - Hotline 037 28 99999.</p>
       </footer>
+      <Chatbot />
     </div>
   );
 };
