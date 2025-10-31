@@ -12,7 +12,9 @@ const getAiClient = () => {
 const getStyleInstruction = (style: string): string => {
   const styleMap: { [key: string]: string } = {
     'Điện ảnh (Cinematic)': 'cinematic style, dramatic lighting, hyperrealistic, 8k, movie still, 16:9 aspect ratio',
+    'Điện ảnh': 'cinematic style, dramatic lighting, hyperrealistic, 8k, movie still, 16:9 aspect ratio',
     'Hoạt hình (Animation)': 'vibrant 3D animation style, Pixar inspired, detailed characters, colorful, 16:9 aspect ratio',
+    'Hoạt hình 3D': 'vibrant 3D animation style, Pixar inspired, detailed characters, colorful, 16:9 aspect ratio',
     'Tranh vẽ thuỷ mặc': 'Chinese ink wash painting style, minimalist, elegant brushstrokes, traditional art, high contrast, 16:9 aspect ratio',
     'Vibe cổ họa Việt Nam': 'Vietnamese antique art style, reminiscent of Nguyen dynasty woodblock prints and lacquer paintings (sơn mài), traditional color palette, detailed cultural attire (like áo dài) and architecture, 16:9 aspect ratio',
     'Người que (Stick Figure)': 'simple stick figure drawing style, minimalist, black and white, clean lines, expressive poses, on a plain white background, 16:9 aspect ratio',
@@ -350,6 +352,7 @@ export const generateAnimationScenes = async (
 ): Promise<any[]> => {
   const ai = getAiClient();
   try {
+    const styleInstruction = getStyleInstruction(style);
     const characterDefinitions = characters.map(c => `- ${c.name}: ${c.prompt}`).join('\n');
     const totalSeconds = durationMinutes * 60 + durationSeconds;
     const numberOfScenes = Math.max(1, Math.round(totalSeconds / 8));
@@ -380,7 +383,7 @@ export const generateAnimationScenes = async (
         f.  **MAINTAIN CONTEXT:** When splitting, all resulting sub-scenes must maintain the same setting, characters, and overarching action to ensure continuity.
         g.  The final number of scenes should approximate the target of ${numberOfScenes}, but can be more if splitting is necessary.
     
-    3.  **Visual Style:** All prompts MUST be tailored to a **${style}** style.
+    3.  **Visual Style:** All prompts MUST be tailored to the following visual style: **${styleInstruction}**.
     
     4.  **Output Format & Language (for each scene or sub-scene):**
         You must generate a JSON object with the following fields:
@@ -391,7 +394,7 @@ export const generateAnimationScenes = async (
             - **Start with Scene Number:** Must begin with its sequential number (e.g., "1. ...").
             - **Prepend Character Descriptions:** At the VERY BEGINNING, for EACH character present, copy their ENTIRE, UNCHANGED, predefined character prompt.
             - **Describe Action & Dialogue:** After character descriptions, describe the setting, actions, emotions, and camera movements in ENGLISH. Then, embed the UNTRANSLATED dialogue chunk from the script.
-            - **Incorporate Style:** The entire prompt must adhere to the **${style}** visual style.
+            - **Incorporate Style:** The entire prompt must adhere to the **${styleInstruction}** visual style.
 
     Your final output must be a single JSON array containing all the scene objects.`;
 
