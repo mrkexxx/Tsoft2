@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface HomePageProps {
   onNavigateToScriptToImage: () => void;
@@ -93,15 +93,71 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNaviga
         }
     ];
 
+    const [countdown, setCountdown] = useState({
+        days: 0,
+        hours: 0,
+        minutes: 0,
+        seconds: 0,
+        isTimeUp: false,
+    });
+
+    useEffect(() => {
+        // Tết 2026 is on February 17, 2026
+        const tetDate = new Date('2026-02-17T00:00:00').getTime();
+
+        const interval = setInterval(() => {
+            const now = new Date().getTime();
+            const distance = tetDate - now;
+
+            if (distance < 0) {
+                clearInterval(interval);
+                setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0, isTimeUp: true });
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            setCountdown({ days, hours, minutes, seconds, isTimeUp: false });
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, []);
+
   return (
     <div className="animate-fade-in">
         <section className="text-center py-16 md:py-20">
             <h1 className="animated-gradient-text text-4xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-brand-light-purple mb-6 max-w-4xl mx-auto leading-tight">
                 Tsoft 2 - Tool tạo prompt video veo3 hàng loạt
             </h1>
-            <h2 className="text-lg md:text-xl text-dark-text-secondary max-w-3xl mx-auto mb-12">
+            <h2 className="text-lg md:text-xl text-dark-text-secondary max-w-3xl mx-auto mb-8">
                 Đồng nhất nhân vật và ảnh minh hoạ bám theo kịch bản storyboard
             </h2>
+            <div className="max-w-xl mx-auto mb-12">
+                <h3 className="text-xl font-semibold text-white mb-4">
+                    {countdown.isTimeUp ? 'Chúc Mừng Năm Mới!' : 'Đếm ngược đến Tết Bính Ngọ 2026'}
+                </h3>
+                <div className="grid grid-cols-4 gap-2 sm:gap-4 p-4 bg-dark-card/50 rounded-xl border border-dark-border backdrop-blur-sm">
+                    <div className="text-center">
+                        <span className="text-3xl sm:text-4xl font-bold text-brand-light-purple">{String(countdown.days).padStart(2, '0')}</span>
+                        <span className="block text-xs sm:text-sm text-dark-text-secondary mt-1">Ngày</span>
+                    </div>
+                    <div className="text-center">
+                        <span className="text-3xl sm:text-4xl font-bold text-brand-light-purple">{String(countdown.hours).padStart(2, '0')}</span>
+                        <span className="block text-xs sm:text-sm text-dark-text-secondary mt-1">Giờ</span>
+                    </div>
+                    <div className="text-center">
+                        <span className="text-3xl sm:text-4xl font-bold text-brand-light-purple">{String(countdown.minutes).padStart(2, '0')}</span>
+                        <span className="block text-xs sm:text-sm text-dark-text-secondary mt-1">Phút</span>
+                    </div>
+                    <div className="text-center">
+                        <span className="text-3xl sm:text-4xl font-bold text-brand-light-purple">{String(countdown.seconds).padStart(2, '0')}</span>
+                        <span className="block text-xs sm:text-sm text-dark-text-secondary mt-1">Giây</span>
+                    </div>
+                </div>
+            </div>
         </section>
 
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
