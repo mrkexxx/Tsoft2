@@ -256,15 +256,20 @@ export const identifyCharactersFromScript = async (script: string, characterNati
 
     if (englishNationality) {
         mainInstruction = `The user has specified a fixed nationality. Your task is to:
-    1.  Read the script to identify all distinct characters.
-    2.  For EACH character, you MUST assign them the nationality of **${englishNationality}**.
-    3.  You MUST IGNORE any clues in the script (like names, locations, or cultural references) that contradict this specified nationality.
-    4.  Create a detailed prompt for each character based on their assigned nationality, describing their culturally-appropriate physical features (face, hair, eyes), age (inferred from script), clothing, and personality.`;
+    1.  Read the script to identify all distinct characters, including humans and animals.
+    2.  For EACH character:
+        a.  Determine if it is a HUMAN or an ANIMAL.
+        b.  **For Humans:** You MUST assign them the nationality of **${englishNationality}**. IGNORE any clues in the script that contradict this. Create a detailed prompt based on this assigned nationality, describing their culturally-appropriate physical features, age, clothing, and personality.
+        c.  **For Animals:** Identify the species. Create a detailed prompt describing its appearance (breed, color, size), personality, and any distinctive features. The fixed nationality does NOT apply to animals.
+    3.  The final prompt for each character must be a comprehensive visual description in ENGLISH.`;
     } else { // 'Default' case
         mainInstruction = `Your task is to perform a deep contextual analysis:
-    1.  Read the entire script to identify all distinct characters.
-    2.  For EACH character, you MUST infer their most likely nationality or ethnicity based on clues in the script (names, locations, cultural references).
-    3.  Create a detailed prompt for each character based on their inferred nationality, describing their culturally-appropriate physical features (face, hair, eyes), age (inferred from script), clothing, and personality.`;
+    1.  Read the entire script to identify all distinct characters, including humans and animals.
+    2.  For EACH character:
+        a.  Determine if it is a HUMAN or an ANIMAL.
+        b.  **For Humans:** Infer their most likely nationality or ethnicity based on clues in the script (names, locations, cultural references). Create a detailed prompt describing their culturally-appropriate physical features (face, hair, eyes), age (inferred from script), clothing, and personality.
+        c.  **For Animals:** Identify the species. Create a detailed prompt describing its appearance (breed, color, size), personality (e.g., playful, grumpy), and any distinctive features (e.g., a collar, a scar). Do NOT assign human nationalities to animals.
+    3.  The final prompt for each character must be a comprehensive visual description in ENGLISH.`;
     }
 
     const systemInstruction = `You are an expert character designer and cultural anthropologist for generative AI. Your task is to analyze a VIETNAMESE script and create a definitive, detailed, and culturally accurate "character sheet" prompt in ENGLISH for each character. This description will be FIXED and used for all subsequent media generation.
@@ -274,7 +279,8 @@ export const identifyCharactersFromScript = async (script: string, characterNati
 
     **PROMPT CONSTRUCTION RULES FOR EACH CHARACTER:**
     - The final prompt must be a single, comprehensive paragraph in ENGLISH.
-    - It must include: Age & Nationality, Culturally-Appropriate Features, Outfit, Personality, and any signature Accessories.
+    - **For Humans:** It must include: Age & Nationality, Culturally-Appropriate Features, Outfit, Personality, and any signature Accessories.
+    - **For Animals:** It must include: Species, Breed/Appearance details, Personality, and any signature features (like a collar).
 
     **FINAL OUTPUT FORMAT:**
     Your final output MUST be a JSON array of objects. Each object must contain two fields: "name" (the character's name in Vietnamese) and "prompt" (the final, combined, culturally-accurate description in English).
@@ -284,6 +290,10 @@ export const identifyCharactersFromScript = async (script: string, characterNati
       {
         "name": "Hùng",
         "prompt": "Hùng, a 35-year-old Vietnamese man with a rugged face, sharp jawline, and short black hair. He typically wears a worn-out brown leather jacket, a simple grey t-shirt, and dark jeans, reflecting his serious and protective personality. He is never seen without his old silver locket."
+      },
+      {
+        "name": "Vàng",
+        "prompt": "Vàng, a playful Vietnamese Phu Quoc Ridgeback dog with golden-brown fur, a distinctive ridge of hair along its back, and intelligent, curious eyes. He is energetic and loyal, often seen wagging his tail and carrying a small rubber ball."
       },
       {
         "name": "John",
