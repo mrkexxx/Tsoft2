@@ -166,6 +166,10 @@ const VeoAnimationGenerator: React.FC<VeoAnimationGeneratorProps> = ({ onGoHome 
           setError("Tổng thời lượng phải lớn hơn 0.");
           return;
       }
+      if (totalSecondsValue > 900) { // 15 minutes * 60 seconds
+          setError("Thời lượng video không được vượt quá 15 phút.");
+          return;
+      }
       setError(null);
       setIsLoading(true);
       setLoadingMessage('AI đang phân tích kịch bản và xác định nhân vật...');
@@ -266,6 +270,9 @@ const VeoAnimationGenerator: React.FC<VeoAnimationGeneratorProps> = ({ onGoHome 
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-center">Bước 1: Nhập Kịch Bản & Tùy chọn</h2>
+            <p className="text-center text-yellow-400 text-sm -mt-4">
+                Lưu ý: Thời lượng video tối đa là 15 phút để đảm bảo hiệu suất và chất lượng tốt nhất.
+            </p>
             <textarea
               value={script}
               onChange={(e) => setScript(e.target.value)}
@@ -278,9 +285,14 @@ const VeoAnimationGenerator: React.FC<VeoAnimationGeneratorProps> = ({ onGoHome 
                       Thời lượng Video
                     </label>
                     <div className="flex items-center space-x-2">
-                        <input id="duration-minutes" type="number" value={durationMinutes} onChange={(e) => setDurationMinutes(Math.max(0, Number(e.target.value)))} min="0" className="w-full p-2 bg-gray-700 border border-dark-border rounded-md focus:ring-2 focus:ring-brand-purple focus:border-brand-purple" aria-label="Phút" />
+                        <input id="duration-minutes" type="number" value={durationMinutes} onChange={(e) => {
+                            let newMinutes = Math.max(0, Number(e.target.value));
+                            if (newMinutes > 15) newMinutes = 15;
+                            setDurationMinutes(newMinutes);
+                            if (newMinutes >= 15) setDurationSeconds(0);
+                        }} min="0" max="15" className="w-full p-2 bg-gray-700 border border-dark-border rounded-md focus:ring-2 focus:ring-brand-purple focus:border-brand-purple" aria-label="Phút" />
                         <span className="text-dark-text-secondary">phút</span>
-                        <input id="duration-seconds" type="number" value={durationSeconds} onChange={(e) => setDurationSeconds(Math.max(0, Math.min(59, Number(e.target.value))))} min="0" max="59" className="w-full p-2 bg-gray-700 border border-dark-border rounded-md focus:ring-2 focus:ring-brand-purple focus:border-brand-purple" aria-label="Giây" />
+                        <input id="duration-seconds" type="number" value={durationSeconds} onChange={(e) => setDurationSeconds(Math.max(0, Math.min(59, Number(e.target.value))))} min="0" max="59" className="w-full p-2 bg-gray-700 border border-dark-border rounded-md focus:ring-2 focus:ring-brand-purple focus:border-brand-purple disabled:opacity-50 disabled:cursor-not-allowed" aria-label="Giây" disabled={durationMinutes >= 15} />
                         <span className="text-dark-text-secondary">giây</span>
                     </div>
                     <p id="duration-helper" className="text-xs text-dark-text-secondary mt-1">Dự kiến tạo {numberOfScenes} phân cảnh (8s/cảnh).</p>
