@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { GeneratedPrompt, GeneratedImage } from '../types';
 
@@ -82,7 +83,14 @@ const PromptList: React.FC<PromptListProps> = ({
 
   const handleDownloadPrompts = (type: 'image' | 'video') => {
     if (prompts.length === 0) return;
-    const content = prompts.map(p => type === 'image' ? p.imagePrompt : p.videoPrompt).join('\n\n---\n\n');
+    
+    let content = '';
+    if (type === 'image') {
+      content = prompts.map(p => p.imagePrompt).join('\n');
+    } else {
+      content = prompts.map(p => p.videoPrompt).join('\n\n---\n\n');
+    }
+
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
