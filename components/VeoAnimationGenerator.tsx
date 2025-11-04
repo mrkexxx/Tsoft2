@@ -8,7 +8,7 @@ interface VeoAnimationGeneratorProps {
 }
 
 type Step = 'script' | 'characters' | 'scenes';
-type ScriptLanguage = 'Tiếng Việt' | 'Tiếng Anh';
+type ScriptLanguage = 'Tiếng Việt' | 'Tiếng Anh' | 'Không có thoại';
 
 interface Character {
     name: string;
@@ -340,6 +340,7 @@ const VeoAnimationGenerator: React.FC<VeoAnimationGeneratorProps> = ({ onGoHome 
                     >
                         <option value="Tiếng Việt">Thoại Tiếng Việt (Prompt Tiếng Anh)</option>
                         <option value="Tiếng Anh">Thoại & Prompt Tiếng Anh</option>
+                        <option value="Không có thoại">Không có thoại (Video câm)</option>
                     </select>
                 </div>
               </div>

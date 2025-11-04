@@ -358,7 +358,7 @@ export const generateAnimationScenes = async (
   durationMinutes: number,
   durationSeconds: number,
   style: string,
-  language: 'Tiếng Việt' | 'Tiếng Anh'
+  language: 'Tiếng Việt' | 'Tiếng Anh' | 'Không có thoại'
 ): Promise<any[]> => {
   const ai = getAiClient();
   try {
@@ -369,44 +369,86 @@ export const generateAnimationScenes = async (
     const totalMinutes = Math.floor(totalSeconds / 60);
     const remainingSeconds = totalSeconds % 60;
 
-    const mainEventsLanguage = language === 'Tiếng Việt' ? 'VIETNAMESE' : 'ENGLISH';
-    const sceneNameLanguage = language === 'Tiếng Việt' ? 'VIETNAMESE' : 'ENGLISH';
-    const sceneNameFormat = language === 'Tiếng Việt' 
-        ? '"Phân Cảnh [Number] ([Start Time]s - [End Time]s)"' 
-        : '"Scene [Number] ([Start Time]s - [End Time]s)"';
-    const mainEventsInstruction = language === 'Tiếng Việt'
-        ? 'A concise summary of the key actions and events in the scene, written in VIETNAMESE.'
-        : 'A concise summary of the key actions and events in the scene, written in ENGLISH.';
+    let systemInstruction: string;
+    let responseSchemaDescription: { sceneName: string; mainEvents: string; detailedVideoPrompt: string; };
 
-    const systemInstruction = `You are an expert animation film producer. Your task is to process a script, character descriptions, style, and duration to create a detailed scene breakdown. The script's dialogue language is ${mainEventsLanguage}.
+    if (language === 'Không có thoại') {
+        systemInstruction = `You are an expert animation film producer. Your task is to process a script, character descriptions, style, and duration to create a detailed scene breakdown. The script describes ACTIONS ONLY and has NO dialogue.
 
-    **CRITICAL Instructions:**
-    
-    1.  **Adhere to Character Prompts:** The provided character descriptions are FIXED and must be used as-is.
-    
-    2.  **Time Segmentation & Dialogue Handling:**
-        a.  The total video duration is ${totalMinutes} minutes and ${remainingSeconds} seconds.
-        b.  Divide the script into logical scenes. For each logical scene, analyze its dialogue.
-        c.  **PRESERVE DIALOGUE:** Dialogue from the script MUST be included in the video prompt in its ORIGINAL language (${mainEventsLanguage}). DO NOT summarize or translate the dialogue.
-        d.  **SPLIT LONG DIALOGUE:** If a character's single line of dialogue is longer than 80 characters, you MUST split that action into multiple, sequential 8-second video scenes.
-        e.  Each new sub-scene will contain a chunk of the dialogue (max 80 characters).
-        f.  **MAINTAIN CONTEXT:** When splitting, all resulting sub-scenes must maintain the same setting, characters, and overarching action to ensure continuity.
-        g.  The final number of scenes should approximate the target of ${numberOfScenes}, but can be more if splitting is necessary.
-    
-    3.  **Visual Style:** All prompts MUST be tailored to the following visual style: **${styleInstruction}**.
-    
-    4.  **Output Format & Language (for each scene or sub-scene):**
-        You must generate a JSON object with the following fields:
-        a.  **sceneName (string):** A descriptive name in ${sceneNameLanguage}. Format: ${sceneNameFormat}. Adjust timecodes based on the 8s/scene rule.
-        b.  **mainEvents (string):** A summary of key actions in ${mainEventsLanguage}, including the specific dialogue chunk for this scene.
-        c.  **charactersPresent (array of strings):** Names of characters in this scene.
-        d.  **detailedVideoPrompt (string):** A comprehensive video prompt in ENGLISH, except for the dialogue.
-            - **Start with Scene Number:** Must begin with its sequential number (e.g., "1. ...").
-            - **Prepend Character Descriptions:** At the VERY BEGINNING, for EACH character present, copy their ENTIRE, UNCHANGED, predefined character prompt.
-            - **Describe Action & Dialogue:** After character descriptions, describe the setting, actions, emotions, and camera movements in ENGLISH. Then, embed the UNTRANSLATED dialogue chunk from the script.
-            - **Incorporate Style:** The entire prompt must adhere to the **${styleInstruction}** visual style.
+**CRITICAL Instructions:**
 
-    Your final output must be a single JSON array containing all the scene objects.`;
+1.  **Adhere to Character Prompts:** The provided character descriptions are FIXED and must be used as-is.
+
+2.  **Time Segmentation & NO DIALOGUE:**
+    a.  The total video duration is ${totalMinutes} minutes and ${remainingSeconds} seconds.
+    b.  Divide the script into logical scenes based on actions and setting changes. Assume there is NO spoken dialogue.
+    c.  Each scene should be approximately 8 seconds long. The final number of scenes should approximate the target of ${numberOfScenes}.
+
+3.  **Visual Style:** All prompts MUST be tailored to the following visual style: **${styleInstruction}**.
+
+4.  **Output Format & Language (for each scene):**
+    You must generate a JSON object with the following fields:
+    a.  **sceneName (string):** A descriptive name in VIETNAMESE. Format: "Phân Cảnh [Number] ([Start Time]s - [End Time]s)". Adjust timecodes based on the 8s/scene rule.
+    b.  **mainEvents (string):** A summary of key actions in VIETNAMESE.
+    c.  **charactersPresent (array of strings):** Names of characters in this scene.
+    d.  **detailedVideoPrompt (string):** A comprehensive video prompt in ENGLISH.
+        - **Start with Scene Number:** Must begin with its sequential number (e.g., "1. ...").
+        - **Prepend Character Descriptions:** At the VERY BEGINNING, for EACH character present, copy their ENTIRE, UNCHANGED, predefined character prompt.
+        - **Describe Action:** After character descriptions, describe the setting, actions, emotions, and camera movements in ENGLISH.
+        - **Incorporate Style:** The entire prompt must adhere to the **${styleInstruction}** visual style.
+        - **MANDATORY SILENCE:** The prompt MUST end with the phrase ", no dialogue, silent film style". This is critical.
+
+Your final output must be a single JSON array containing all the scene objects.`;
+        
+        responseSchemaDescription = {
+            sceneName: `The name for the scene, including time code, in VIETNAMESE. Format: "Phân Cảnh [Number] ([Start Time]s - [End Time]s)".`,
+            mainEvents: `Summary of events in this scene, in VIETNAMESE.`,
+            detailedVideoPrompt: 'The detailed video prompt in English (with NO dialogue), prefixed with its sequential number (e.g., "1. [prompt text]").'
+        };
+
+    } else {
+        const mainEventsLanguage = language === 'Tiếng Việt' ? 'VIETNAMESE' : 'ENGLISH';
+        const sceneNameLanguage = language === 'Tiếng Việt' ? 'VIETNAMESE' : 'ENGLISH';
+        const sceneNameFormat = language === 'Tiếng Việt' 
+            ? '"Phân Cảnh [Number] ([Start Time]s - [End Time]s)"' 
+            : '"Scene [Number] ([Start Time]s - [End Time]s)"';
+        
+        systemInstruction = `You are an expert animation film producer. Your task is to process a script, character descriptions, style, and duration to create a detailed scene breakdown. The script's dialogue language is ${mainEventsLanguage}.
+
+**CRITICAL Instructions:**
+
+1.  **Adhere to Character Prompts:** The provided character descriptions are FIXED and must be used as-is.
+
+2.  **Time Segmentation & Dialogue Handling:**
+    a.  The total video duration is ${totalMinutes} minutes and ${remainingSeconds} seconds.
+    b.  Divide the script into logical scenes. For each logical scene, analyze its dialogue.
+    c.  **PRESERVE DIALOGUE:** Dialogue from the script MUST be included in the video prompt in its ORIGINAL language (${mainEventsLanguage}). DO NOT summarize or translate the dialogue.
+    d.  **SPLIT LONG DIALOGUE:** If a character's single line of dialogue is longer than 80 characters, you MUST split that action into multiple, sequential 8-second video scenes.
+    e.  Each new sub-scene will contain a chunk of the dialogue (max 80 characters).
+    f.  **MAINTAIN CONTEXT:** When splitting, all resulting sub-scenes must maintain the same setting, characters, and overarching action to ensure continuity.
+    g.  The final number of scenes should approximate the target of ${numberOfScenes}, but can be more if splitting is necessary.
+
+3.  **Visual Style:** All prompts MUST be tailored to the following visual style: **${styleInstruction}**.
+
+4.  **Output Format & Language (for each scene or sub-scene):**
+    You must generate a JSON object with the following fields:
+    a.  **sceneName (string):** A descriptive name in ${sceneNameLanguage}. Format: ${sceneNameFormat}. Adjust timecodes based on the 8s/scene rule.
+    b.  **mainEvents (string):** A summary of key actions in ${mainEventsLanguage}, including the specific dialogue chunk for this scene.
+    c.  **charactersPresent (array of strings):** Names of characters in this scene.
+    d.  **detailedVideoPrompt (string):** A comprehensive video prompt in ENGLISH, except for the dialogue.
+        - **Start with Scene Number:** Must begin with its sequential number (e.g., "1. ...").
+        - **Prepend Character Descriptions:** At the VERY BEGINNING, for EACH character present, copy their ENTIRE, UNCHANGED, predefined character prompt.
+        - **Describe Action & Dialogue:** After character descriptions, describe the setting, actions, emotions, and camera movements in ENGLISH. Then, embed the UNTRANSLATED dialogue chunk from the script.
+        - **Incorporate Style:** The entire prompt must adhere to the **${styleInstruction}** visual style.
+
+Your final output must be a single JSON array containing all the scene objects.`;
+        
+        responseSchemaDescription = {
+            sceneName: `The name for the scene, including time code, in ${sceneNameLanguage}. Format: ${sceneNameFormat}.`,
+            mainEvents: `Summary of events in this scene, in ${mainEventsLanguage}.`,
+            detailedVideoPrompt: 'The detailed video prompt in English (with original dialogue), prefixed with its sequential number (e.g., "1. [prompt text]").'
+        };
+    }
 
     const userContent = `
     **Predefined Characters:**
@@ -434,11 +476,11 @@ export const generateAnimationScenes = async (
             properties: {
               sceneName: { 
                 type: Type.STRING,
-                description: `The name for the scene, including time code, in ${sceneNameLanguage}. Format: ${sceneNameFormat}.`,
+                description: responseSchemaDescription.sceneName,
               },
               mainEvents: { 
                 type: Type.STRING,
-                description: `Summary of events in this scene, in ${mainEventsLanguage}.`
+                description: responseSchemaDescription.mainEvents
               },
               charactersPresent: {
                 type: Type.ARRAY,
@@ -446,7 +488,7 @@ export const generateAnimationScenes = async (
               },
               detailedVideoPrompt: { 
                 type: Type.STRING,
-                description: 'The detailed video prompt in English (with original dialogue), prefixed with its sequential number (e.g., "1. [prompt text]").' 
+                description: responseSchemaDescription.detailedVideoPrompt
               }
             },
             required: ['sceneName', 'mainEvents', 'charactersPresent', 'detailedVideoPrompt']
