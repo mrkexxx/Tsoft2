@@ -1,5 +1,6 @@
 
 
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { GeneratedPrompt, YouTubeSeoResult, VideoAnalysisResult, ScriptAnalysisResult } from '../types';
 
@@ -835,7 +836,7 @@ export const analyzeAndRewriteScript = async (
                 -   Using a rich vocabulary of synonyms.
                 -   Adding your own commentary, analysis, metaphors, or evaluations to provide new value (this is crucial for Fair Use).
             c.  **Tone/Persona Application:** Rewrite the script by adopting the persona and tone of a **"${tone}"**. Embody the characteristics of this persona in your writing style, vocabulary, and sentence structure.
-            d.  **Target Duration (IMPORTANT):** ${targetCharCount ? `The user wants the rewritten script to be suitable for a video of approximately ${targetDurationMinutes} minute(s). You MUST adjust your rewrite to be around **${targetCharCount} characters** long. Expand on details or be more concise to meet this target.` : "Rewrite the script to a natural length based on the content."}
+            d.  **Target Duration (ABSOLUTELY CRITICAL):** ${targetCharCount ? `The user requires a script for a video of exactly ${targetDurationMinutes} minute(s). You MUST generate a rewritten script that is PRECISELY **${targetCharCount} characters** long. The allowed margin of error is extremely small: +/- 10 characters (i.e., between ${targetCharCount - 10} and ${targetCharCount + 10} characters). This is not a suggestion, it is a mandatory command. Meticulously expand on details or be extremely concise to hit this exact character count. Failure to meet this strict length requirement will make the output unusable.` : "Rewrite the script to a natural length based on the content."}
             e.  **Optimization:** Automatically insert a compelling hook at the beginning and a call-to-action (CTA) at the end. The CTA should encourage viewers to like, subscribe, and comment.
 
         3.  **Policy Check (Step 3):**
@@ -946,7 +947,7 @@ export const continueRewriteScript = async (
         **CRITICAL INSTRUCTIONS:**
         1.  **SEAMLESS CONTINUITY (ABSOLUTE MANDATORY):** Your output MUST be a direct continuation of the previously written script. Start writing immediately from the point where the previous text ended. There must be NO introduction, NO greeting, NO part number, and NO mention that this is a new section. The transition must be completely invisible to the reader.
         2.  **Adopt Persona:** Maintain the persona of a **"${tone}"**.
-        3.  **Target Duration:** This new part should be approximately ${targetDurationMinutes} minute(s) long (around ${targetCharCount} characters).
+        3.  **Target Duration (ABSOLUTELY CRITICAL):** This new part of the script must be PRECISELY ${targetDurationMinutes} minute(s) long. This translates to an exact character count of **${targetCharCount} characters**. You are allowed a tiny margin of error of +/- 10 characters (i.e., the text you generate must be between ${targetCharCount - 10} and ${targetCharCount + 10} characters long). This is a non-negotiable requirement. Do whatever is necessary—add detail, use more descriptive words, or be concise—to meet this exact length.
         4.  **Language:** The output MUST be in ${language}.
         5.  **Output Format (STRICT):**
             -   Output ONLY the text for this new part.
