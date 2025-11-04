@@ -47,3 +47,27 @@ export interface VideoAnalysisResult {
   }[];
   scenes: string[];
 }
+
+export interface ScriptAnalysisResult {
+  analysis: {
+    wordCount: number;
+    charCount: number;
+    sentenceCount: number;
+    policyCheck: {
+      reuseRisk: string; // e.g., "Low", "Medium", "High" with explanation
+      fairUseNotes: string;
+      forbiddenWordsFound: string[];
+    };
+  };
+  characters: {
+    name: string;
+    role: string; // e.g., "Protagonist", "Narrator"
+    description: string;
+  }[];
+  threeActStructure: {
+    act1_setup: string;
+    act2_confrontation: string;
+    act3_resolution: string;
+  };
+  rewrittenScript: string;
+}

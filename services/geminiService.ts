@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { GeneratedPrompt, YouTubeSeoResult, VideoAnalysisResult } from '../types';
+import { GeneratedPrompt, YouTubeSeoResult, VideoAnalysisResult, ScriptAnalysisResult } from '../types';
 
 const getAiClient = () => {
     const apiKey = localStorage.getItem('gemini-api-key');
@@ -797,5 +797,115 @@ export const generateVeoPromptsFromScenes = async (analysisResult: VideoAnalysis
             throw new Error(`Đã xảy ra lỗi: ${error.message}`);
         }
         throw new Error("Đã xảy ra lỗi không xác định trong quá trình tạo prompts.");
+    }
+};
+
+export const analyzeAndRewriteScript = async (
+    script: string,
+    tone: string,
+    targetDurationMinutes: number
+): Promise<ScriptAnalysisResult> => {
+    const ai = getAiClient();
+    try {
+        const targetCharCount = targetDurationMinutes > 0 ? targetDurationMinutes * 1000 : null;
+        
+        const systemInstruction = `You are an expert script analyst and screenwriter for the Vietnamese market, specializing in transforming existing content for YouTube while avoiding policy violations. Your task is to perform a deep analysis of a competitor's script and rewrite it according to specific guidelines.
+
+        **CRITICAL WORKFLOW:**
+
+        1.  **Analyze & Structure (Step 1):**
+            a.  **Text Statistics (MANDATORY):** Calculate and return: word count, character count, and sentence count for the ORIGINAL script.
+            b.  **Identify Characters:** Identify all distinct characters. For each, assign a role from this list: [Narrator, Protagonist, Antagonist, Supporting, Host, Symbolic]. Provide a brief description for each character based on the script.
+            c.  **3-Act Structure:** Deconstruct the script into a classic three-act structure: Act 1 (Setup/Mở đầu), Act 2 (Confrontation/Cao trào), Act 3 (Resolution/Kết). Summarize each act concisely.
+
+        2.  **Rewrite (Step 2):**
+            a.  **Core Goal:** Rewrite the entire script. The new script MUST retain all original information, characters, events, and facts.
+            b.  **Transformation:** You MUST NOT simply change a few words. You must transform it by:
+                -   Changing sentence structures significantly.
+                -   Using a rich vocabulary of synonyms.
+                -   Adding your own commentary, analysis, metaphors, or evaluations to provide new value (this is crucial for Fair Use).
+            c.  **Tone/Persona Application:** Rewrite the script by adopting the persona and tone of a **"${tone}"**. Embody the characteristics of this persona in your writing style, vocabulary, and sentence structure.
+            d.  **Target Duration (IMPORTANT):** ${targetCharCount ? `The user wants the rewritten script to be suitable for a video of approximately ${targetDurationMinutes} minute(s). You MUST adjust your rewrite to be around **${targetCharCount} characters** long. Expand on details or be more concise to meet this target.` : "Rewrite the script to a natural length based on the content."}
+            e.  **Optimization:** Automatically insert a compelling hook at the beginning and a call-to-action (CTA) at the end. The CTA should encourage viewers to like, subscribe, and comment.
+
+        3.  **Policy Check (Step 3):**
+            a.  **Reuse Content:** Evaluate the rewritten script against the original. Provide a risk assessment (Low, Medium, High) and explain WHY.
+            b.  **Fair Use:** Briefly explain how your rewritten version qualifies for Fair Use.
+            c.  **Forbidden Words:** Scan for and list any words related to violence, politics, adult content, or medical misinformation. If none, state "Không tìm thấy từ ngữ bị cấm."
+
+        **FINAL OUTPUT FORMAT (MANDATORY):**
+        Your output MUST be a single, valid JSON object that strictly follows the provided schema. Do not add any text or formatting outside of the JSON structure.`;
+        
+        const responseSchema = {
+            type: Type.OBJECT,
+            properties: {
+                analysis: {
+                    type: Type.OBJECT,
+                    properties: {
+                        wordCount: { type: Type.NUMBER, description: "Word count of the ORIGINAL script." },
+                        charCount: { type: Type.NUMBER, description: "Character count of the ORIGINAL script." },
+                        sentenceCount: { type: Type.NUMBER, description: "Sentence count of the ORIGINAL script." },
+                        policyCheck: {
+                            type: Type.OBJECT,
+                            properties: {
+                                reuseRisk: { type: Type.STRING, description: "Risk assessment for Reuse Content (Low, Medium, High) with a brief explanation." },
+                                fairUseNotes: { type: Type.STRING, description: "Explanation of how the rewrite qualifies for Fair Use." },
+                                forbiddenWordsFound: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of forbidden words found, or an empty array." }
+                            },
+                            required: ['reuseRisk', 'fairUseNotes', 'forbiddenWordsFound']
+                        }
+                    },
+                    required: ['wordCount', 'charCount', 'sentenceCount', 'policyCheck']
+                },
+                characters: {
+                    type: Type.ARRAY,
+                    items: {
+                        type: Type.OBJECT,
+                        properties: {
+                            name: { type: Type.STRING },
+                            role: { type: Type.STRING },
+                            description: { type: Type.STRING }
+                        },
+                        required: ['name', 'role', 'description']
+                    }
+                },
+                threeActStructure: {
+                    type: Type.OBJECT,
+                    properties: {
+                        act1_setup: { type: Type.STRING, description: "Summary of Act 1 (Setup) in Vietnamese." },
+                        act2_confrontation: { type: Type.STRING, description: "Summary of Act 2 (Confrontation) in Vietnamese." },
+                        act3_resolution: { type: Type.STRING, description: "Summary of Act 3 (Resolution) in Vietnamese." }
+                    },
+                    required: ['act1_setup', 'act2_confrontation', 'act3_resolution']
+                },
+                rewrittenScript: { type: Type.STRING, description: "The complete, rewritten script in the specified tone." }
+            },
+            required: ['analysis', 'characters', 'threeActStructure', 'rewrittenScript']
+        };
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-pro',
+            contents: `**Script to analyze and rewrite:**\n---\n${script}\n---`,
+            config: {
+                systemInstruction,
+                responseMimeType: 'application/json',
+                responseSchema,
+            }
+        });
+
+        const parsedResponse: ScriptAnalysisResult = JSON.parse(response.text);
+        
+        if (!parsedResponse) {
+            throw new Error("Không thể phân tích và viết lại kịch bản.");
+        }
+        
+        return parsedResponse;
+
+    } catch (error) {
+        console.error("Lỗi khi viết lại kịch bản:", error);
+        if (error instanceof Error) {
+            throw new Error(`Đã xảy ra lỗi: ${error.message}`);
+        }
+        throw new Error("Đã xảy ra lỗi không xác định trong quá trình viết lại kịch bản.");
     }
 };

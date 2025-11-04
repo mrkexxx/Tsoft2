@@ -212,7 +212,7 @@ const Chatbot: React.FC = () => {
             <div className={`fixed bottom-8 right-8 z-40 transition-transform duration-300 ${isOpen ? 'translate-y-16 opacity-0' : 'translate-y-0 opacity-100'}`}>
                 <button
                     onClick={handleToggle}
-                    className="bg-brand-purple text-white rounded-full p-4 shadow-lg hover:bg-brand-light-purple focus:outline-none focus:ring-2 focus:ring-brand-light-purple focus:ring-offset-2 focus:ring-offset-dark-bg"
+                    className="bg-brand-purple text-white rounded-full p-4 shadow-lg hover:bg-brand-light-purple focus:outline-none focus:ring-2 focus:ring-brand-light-purple focus:ring-offset-2 focus:ring-offset-dark-bg chatbot-pulse"
                     aria-label="Mở trợ lý AI"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">

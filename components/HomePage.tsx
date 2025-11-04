@@ -6,6 +6,7 @@ interface HomePageProps {
   onNavigateToThumbnailGenerator: () => void;
   onNavigateToYouTubeSeo: () => void;
   onNavigateToVideoAnalyzer: () => void;
+  onNavigateToScriptRewriter: () => void;
 }
 
 // FIX: Replaced JSX.Element with React.ReactElement to resolve "Cannot find namespace 'JSX'" error.
@@ -57,7 +58,7 @@ const CommunityLink: React.FC<{ title: string; description: string; href: string
 );
 
 
-const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNavigateToVeoAnimation, onNavigateToThumbnailGenerator, onNavigateToYouTubeSeo, onNavigateToVideoAnalyzer }) => {
+const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNavigateToVeoAnimation, onNavigateToThumbnailGenerator, onNavigateToYouTubeSeo, onNavigateToVideoAnalyzer, onNavigateToScriptRewriter }) => {
     const defaultCommunityIcon = (
         <div className="bg-brand-purple/20 p-3 rounded-lg">
              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-brand-light-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -212,6 +213,18 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNaviga
             }
             onClick={onNavigateToVideoAnalyzer}
         />
+        <div className="vip-card-container">
+            <ToolCard 
+                title="Viết lại kịch bản đối thủ (VIP)"
+                description="Phân tích kịch bản của đối thủ, gán vai, và viết lại để tránh Reuse Content, tối ưu cho Tsoft/VEO3."
+                icon={
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                }
+                onClick={onNavigateToScriptRewriter}
+            />
+        </div>
       </div>
 
        <section className="mt-24 max-w-4xl mx-auto">

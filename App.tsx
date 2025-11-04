@@ -12,14 +12,17 @@ import { Article } from './types';
 import InfoPopup from './components/InfoPopup';
 import Chatbot from './components/Chatbot';
 import VideoAnalyzer from './components/VideoAnalyzer';
+import ScriptRewriter from './components/ScriptRewriter';
+import PasswordProtection from './components/PasswordProtection';
 
-type Page = 'home' | 'scriptToImage' | 'veoAnimation' | 'history' | 'articleDetail' | 'thumbnailGenerator' | 'youtubeSeo' | 'apiKeySetup' | 'videoAnalyzer';
+type Page = 'home' | 'scriptToImage' | 'veoAnimation' | 'history' | 'articleDetail' | 'thumbnailGenerator' | 'youtubeSeo' | 'apiKeySetup' | 'videoAnalyzer' | 'scriptRewriter';
 
 const App: React.FC = () => {
   const [hasApiKey, setHasApiKey] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [showInfoPopup, setShowInfoPopup] = useState<boolean>(false);
+  const [showVipPopup, setShowVipPopup] = useState<boolean>(false);
 
   useEffect(() => {
     const storedKey = localStorage.getItem('gemini-api-key');
@@ -69,6 +72,15 @@ const App: React.FC = () => {
     setSelectedArticle(null);
   };
 
+  const navigateToScriptRewriter = () => {
+    if (sessionStorage.getItem('vipAccessGranted') === 'true') {
+        setCurrentPage('scriptRewriter');
+        setSelectedArticle(null);
+    } else {
+        setShowVipPopup(true);
+    }
+  };
+
   const navigateHome = () => {
     setCurrentPage('home');
     setSelectedArticle(null);
@@ -83,6 +95,12 @@ const App: React.FC = () => {
     setCurrentPage('apiKeySetup');
     setSelectedArticle(null);
   };
+
+  const handleVipSuccess = () => {
+    setShowVipPopup(false);
+    setCurrentPage('scriptRewriter');
+    setSelectedArticle(null);
+  };
   
   if (!hasApiKey) {
     return <ApiKeySetup onSuccess={handleApiKeySuccess} />;
@@ -91,7 +109,7 @@ const App: React.FC = () => {
   const renderPage = () => {
     switch (currentPage) {
         case 'home':
-            return <HomePage onNavigateToScriptToImage={navigateToScriptToImage} onNavigateToVeoAnimation={navigateToVeoAnimation} onNavigateToThumbnailGenerator={navigateToThumbnailGenerator} onNavigateToYouTubeSeo={navigateToYouTubeSeo} onNavigateToVideoAnalyzer={navigateToVideoAnalyzer} />;
+            return <HomePage onNavigateToScriptToImage={navigateToScriptToImage} onNavigateToVeoAnimation={navigateToVeoAnimation} onNavigateToThumbnailGenerator={navigateToThumbnailGenerator} onNavigateToYouTubeSeo={navigateToYouTubeSeo} onNavigateToVideoAnalyzer={navigateToVideoAnalyzer} onNavigateToScriptRewriter={navigateToScriptRewriter} />;
         case 'scriptToImage':
             return <ScriptToImageGenerator onGoHome={navigateHome} />;
         case 'veoAnimation':
@@ -102,6 +120,8 @@ const App: React.FC = () => {
             return <YouTubeSeoGenerator onGoHome={navigateHome} />;
         case 'videoAnalyzer':
             return <VideoAnalyzer onGoHome={navigateHome} />;
+        case 'scriptRewriter':
+            return <ScriptRewriter onGoHome={navigateHome} />;
         case 'history':
             return <HistoryPage onGoHome={navigateHome} onNavigateToArticle={navigateToArticleDetail} />;
         case 'articleDetail':
@@ -113,13 +133,14 @@ const App: React.FC = () => {
         case 'apiKeySetup':
             return <ApiKeySetup onSuccess={handleApiKeySuccess} />;
         default:
-            return <HomePage onNavigateToScriptToImage={navigateToScriptToImage} onNavigateToVeoAnimation={navigateToVeoAnimation} onNavigateToThumbnailGenerator={navigateToThumbnailGenerator} onNavigateToYouTubeSeo={navigateToYouTubeSeo} onNavigateToVideoAnalyzer={navigateToVideoAnalyzer} />;
+            return <HomePage onNavigateToScriptToImage={navigateToScriptToImage} onNavigateToVeoAnimation={navigateToVeoAnimation} onNavigateToThumbnailGenerator={navigateToThumbnailGenerator} onNavigateToYouTubeSeo={navigateToYouTubeSeo} onNavigateToVideoAnalyzer={navigateToVideoAnalyzer} onNavigateToScriptRewriter={navigateToScriptRewriter} />;
     }
   }
 
   return (
     <div className="min-h-screen bg-dark-bg text-dark-text">
       {showInfoPopup && <InfoPopup onClose={() => setShowInfoPopup(false)} />}
+      {showVipPopup && <PasswordProtection onSuccess={handleVipSuccess} onClose={() => setShowVipPopup(false)} />}
       <Header onGoHome={navigateHome} onNavigateToHistory={navigateToHistory} onNavigateToApiKeySetup={navigateToApiKeySetup} />
       <main className="container mx-auto p-4 md:p-8">
         {renderPage()}

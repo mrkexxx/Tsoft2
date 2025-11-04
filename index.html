@@ -65,6 +65,48 @@
         50% { opacity: 0.4; transform: translateY(0); }
         100% { opacity: 0.4; transform: translateY(0); }
       }
+      @keyframes pulse-animation {
+        0% {
+          box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7);
+        }
+        70% {
+          box-shadow: 0 0 0 15px rgba(139, 92, 246, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+        }
+      }
+      .chatbot-pulse {
+        animation: pulse-animation 2s infinite;
+      }
+      /* === VIP Card Glow Effect === */
+      @keyframes vip-glow-spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+      }
+      .vip-card-container {
+          position: relative;
+          padding: 2px; /* This creates the border thickness */
+          border-radius: 0.75rem; /* Tailwind's rounded-xl */
+          overflow: hidden;
+          z-index: 1;
+      }
+      .vip-card-container::before {
+          content: '';
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: conic-gradient(
+              transparent,
+              #a855f7, /* purple */
+              #ec4899, /* pink */
+              transparent 30%
+          );
+          animation: vip-glow-spin 4s linear infinite;
+          z-index: -1; /* Place the gradient behind the card */
+      }
     </style>
   <script type="importmap">
 {
