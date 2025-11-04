@@ -29,6 +29,11 @@ const tones = [
     "Giáo viên Thân thiện (Giọng giảng giải, dễ hiểu, gần gũi)"
 ];
 
+const languages = [
+    'Vietnamese', 'English', 'Chinese (Mandarin)', 'Spanish', 'Arabic', 'French', 'Hindi', 'Portuguese', 'Japanese', 'Korean'
+];
+
+
 const FileUploadIcon: React.FC = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
@@ -39,6 +44,7 @@ const FileUploadIcon: React.FC = () => (
 const ScriptRewriter: React.FC<ScriptRewriterProps> = ({ onGoHome }) => {
     const [script, setScript] = useState('');
     const [tone, setTone] = useState<string>(tones[0]);
+    const [language, setLanguage] = useState<string>(languages[0]);
     const [targetDurationMinutes, setTargetDurationMinutes] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -96,7 +102,7 @@ const ScriptRewriter: React.FC<ScriptRewriterProps> = ({ onGoHome }) => {
         setResult(null);
         try {
             const duration = Number(targetDurationMinutes);
-            const analysisResult = await analyzeAndRewriteScript(script, tone, duration > 0 ? duration : 0);
+            const analysisResult = await analyzeAndRewriteScript(script, tone, duration > 0 ? duration : 0, language);
             setResult(analysisResult);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Đã xảy ra lỗi không xác định.');
@@ -108,6 +114,7 @@ const ScriptRewriter: React.FC<ScriptRewriterProps> = ({ onGoHome }) => {
     const handleStartOver = () => {
         setScript('');
         setTone(tones[0]);
+        setLanguage(languages[0]);
         setTargetDurationMinutes('');
         setResult(null);
         setError(null);
@@ -176,7 +183,7 @@ const ScriptRewriter: React.FC<ScriptRewriterProps> = ({ onGoHome }) => {
                            Số từ: {wordCount} | Số ký tự: {charCount}
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                          <div>
                             <label htmlFor="tone-select" className="block text-md font-medium text-dark-text-secondary mb-2">Giọng điệu viết lại</label>
                             <select
@@ -186,6 +193,17 @@ const ScriptRewriter: React.FC<ScriptRewriterProps> = ({ onGoHome }) => {
                                 className="w-full p-3 bg-gray-900/50 border border-dark-border rounded-lg focus:ring-2 focus:ring-brand-purple"
                             >
                                 {tones.map(t => <option key={t} value={t}>{t}</option>)}
+                            </select>
+                        </div>
+                        <div>
+                            <label htmlFor="language-select" className="block text-md font-medium text-dark-text-secondary mb-2">Ngôn ngữ đầu ra</label>
+                            <select
+                                id="language-select"
+                                value={language}
+                                onChange={(e) => setLanguage(e.target.value)}
+                                className="w-full p-3 bg-gray-900/50 border border-dark-border rounded-lg focus:ring-2 focus:ring-brand-purple"
+                            >
+                                {languages.map(l => <option key={l} value={l}>{l}</option>)}
                             </select>
                         </div>
                          <div>

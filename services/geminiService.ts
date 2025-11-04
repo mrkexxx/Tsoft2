@@ -803,20 +803,21 @@ export const generateVeoPromptsFromScenes = async (analysisResult: VideoAnalysis
 export const analyzeAndRewriteScript = async (
     script: string,
     tone: string,
-    targetDurationMinutes: number
+    targetDurationMinutes: number,
+    language: string
 ): Promise<ScriptAnalysisResult> => {
     const ai = getAiClient();
     try {
         const targetCharCount = targetDurationMinutes > 0 ? targetDurationMinutes * 1000 : null;
         
-        const systemInstruction = `You are an expert script analyst and screenwriter for the Vietnamese market, specializing in transforming existing content for YouTube while avoiding policy violations. Your task is to perform a deep analysis of a competitor's script and rewrite it according to specific guidelines.
+        const systemInstruction = `You are an expert script analyst and screenwriter, specializing in transforming existing content for YouTube while avoiding policy violations. Your task is to perform a deep analysis of a competitor's script and rewrite it according to specific guidelines. The final output, including all analysis fields and the rewritten script, MUST be in ${language}.
 
         **CRITICAL WORKFLOW:**
 
         1.  **Analyze & Structure (Step 1):**
             a.  **Text Statistics (MANDATORY):** Calculate and return: word count, character count, and sentence count for the ORIGINAL script.
             b.  **Identify Characters:** Identify all distinct characters. For each, assign a role from this list: [Narrator, Protagonist, Antagonist, Supporting, Host, Symbolic]. Provide a brief description for each character based on the script.
-            c.  **3-Act Structure:** Deconstruct the script into a classic three-act structure: Act 1 (Setup/Mở đầu), Act 2 (Confrontation/Cao trào), Act 3 (Resolution/Kết). Summarize each act concisely.
+            c.  **3-Act Structure:** Deconstruct the script into a classic three-act structure: Act 1 (Setup), Act 2 (Confrontation), Act 3 (Resolution). Summarize each act concisely.
 
         2.  **Rewrite (Step 2):**
             a.  **Core Goal:** Rewrite the entire script. The new script MUST retain all original information, characters, events, and facts.
@@ -831,7 +832,9 @@ export const analyzeAndRewriteScript = async (
         3.  **Policy Check (Step 3):**
             a.  **Reuse Content:** Evaluate the rewritten script against the original. Provide a risk assessment (Low, Medium, High) and explain WHY.
             b.  **Fair Use:** Briefly explain how your rewritten version qualifies for Fair Use.
-            c.  **Forbidden Words:** Scan for and list any words related to violence, politics, adult content, or medical misinformation. If none, state "Không tìm thấy từ ngữ bị cấm."
+            c.  **Forbidden Words:** Scan for and list any words related to violence, politics, adult content, or medical misinformation. If none, state the equivalent of "No forbidden words found" in ${language}.
+
+        4. **LANGUAGE REQUIREMENT (CRITICAL):** All text in the final JSON output, including character descriptions, structure summaries, policy notes, and the rewritten script itself, MUST be in ${language}.
 
         **FINAL OUTPUT FORMAT (MANDATORY):**
         Your output MUST be a single, valid JSON object that strictly follows the provided schema. Do not add any text or formatting outside of the JSON structure.`;
@@ -848,8 +851,8 @@ export const analyzeAndRewriteScript = async (
                         policyCheck: {
                             type: Type.OBJECT,
                             properties: {
-                                reuseRisk: { type: Type.STRING, description: "Risk assessment for Reuse Content (Low, Medium, High) with a brief explanation." },
-                                fairUseNotes: { type: Type.STRING, description: "Explanation of how the rewrite qualifies for Fair Use." },
+                                reuseRisk: { type: Type.STRING, description: "Risk assessment for Reuse Content (Low, Medium, High) with a brief explanation in the target language." },
+                                fairUseNotes: { type: Type.STRING, description: "Explanation of how the rewrite qualifies for Fair Use in the target language." },
                                 forbiddenWordsFound: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of forbidden words found, or an empty array." }
                             },
                             required: ['reuseRisk', 'fairUseNotes', 'forbiddenWordsFound']
@@ -872,13 +875,13 @@ export const analyzeAndRewriteScript = async (
                 threeActStructure: {
                     type: Type.OBJECT,
                     properties: {
-                        act1_setup: { type: Type.STRING, description: "Summary of Act 1 (Setup) in Vietnamese." },
-                        act2_confrontation: { type: Type.STRING, description: "Summary of Act 2 (Confrontation) in Vietnamese." },
-                        act3_resolution: { type: Type.STRING, description: "Summary of Act 3 (Resolution) in Vietnamese." }
+                        act1_setup: { type: Type.STRING, description: "Summary of Act 1 (Setup) in the target language." },
+                        act2_confrontation: { type: Type.STRING, description: "Summary of Act 2 (Confrontation) in the target language." },
+                        act3_resolution: { type: Type.STRING, description: "Summary of Act 3 (Resolution) in the target language." }
                     },
                     required: ['act1_setup', 'act2_confrontation', 'act3_resolution']
                 },
-                rewrittenScript: { type: Type.STRING, description: "The complete, rewritten script in the specified tone." }
+                rewrittenScript: { type: Type.STRING, description: "The complete, rewritten script in the specified tone and target language." }
             },
             required: ['analysis', 'characters', 'threeActStructure', 'rewrittenScript']
         };
