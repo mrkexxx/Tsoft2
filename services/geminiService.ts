@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { GeneratedPrompt, YouTubeSeoResult, VideoAnalysisResult, ScriptAnalysisResult } from '../types';
 
@@ -828,6 +829,7 @@ export const analyzeAndRewriteScript = async (
             c.  **Tone/Persona Application:** Rewrite the script by adopting the persona and tone of a **"${tone}"**. Embody the characteristics of this persona in your writing style, vocabulary, and sentence structure.
             d.  **Target Duration (IMPORTANT):** ${targetCharCount ? `The user wants the rewritten script to be suitable for a video of approximately ${targetDurationMinutes} minute(s). You MUST adjust your rewrite to be around **${targetCharCount} characters** long. Expand on details or be more concise to meet this target.` : "Rewrite the script to a natural length based on the content."}
             e.  **Optimization:** Automatically insert a compelling hook at the beginning and a call-to-action (CTA) at the end. The CTA should encourage viewers to like, subscribe, and comment.
+            f.  **Clean Storytelling Output (CRITICAL):** The rewritten script MUST be pure narrative/dialogue text suitable for a voiceover. It MUST NOT contain any technical directions, scene transition notes (e.g., "Chuyển cảnh," "Hết cảnh"), camera instructions (e.g., "Cận cảnh," "Toàn cảnh"), or visual descriptions enclosed in parentheses (e.g., "(hình ảnh tư liệu)"). The output should only be the words that are meant to be spoken.
 
         3.  **Policy Check (Step 3):**
             a.  **Reuse Content:** Evaluate the rewritten script against the original. Provide a risk assessment (Low, Medium, High) and explain WHY.
@@ -910,5 +912,67 @@ export const analyzeAndRewriteScript = async (
             throw new Error(`Đã xảy ra lỗi: ${error.message}`);
         }
         throw new Error("Đã xảy ra lỗi không xác định trong quá trình viết lại kịch bản.");
+    }
+};
+
+export const continueRewriteScript = async (
+    originalScript: string,
+    tone: string,
+    language: string,
+    targetDurationMinutes: number,
+    partNumber: number,
+    totalParts: number,
+    previousRewrittenScript: string
+): Promise<string> => {
+    const ai = getAiClient();
+    try {
+        const targetCharCount = targetDurationMinutes > 0 ? targetDurationMinutes * 1000 : null;
+
+        const systemInstruction = `You are an expert screenwriter continuing a script rewriting task. You must work in ${language}.
+
+        **CONTEXT:**
+        - **Original Script:** The full original script is provided below for complete context.
+        - **Task:** You are writing PART ${partNumber} of a ${totalParts}-part series.
+        - **Previously Written:** The content for the previous part(s) is provided below.
+        - **Your Goal:** Write the NEXT part of the script. It must seamlessly and logically continue from where the previous part ended.
+
+        **CRITICAL INSTRUCTIONS:**
+        1.  **Continuity is Key:** Ensure the tone, characters, and plot are consistent with the previous part.
+        2.  **Adopt Persona:** Maintain the persona of a **"${tone}"**.
+        3.  **Target Duration:** This new part should be approximately ${targetDurationMinutes} minute(s) long (around ${targetCharCount} characters).
+        4.  **Language:** The output MUST be in ${language}.
+        5.  **Output Format:** Output ONLY the text for this new part. DO NOT include the analysis JSON, any preamble like "Here is Part ${partNumber}:", or repeat any of the previous script. Just the new text.
+        6.  **Clean Storytelling Output (CRITICAL):** The script part you write MUST be pure narrative/dialogue text suitable for a voiceover. DO NOT include any technical directions, scene transition notes (e.g., "Chuyển cảnh"), camera instructions, or parenthetical visual descriptions. Just the new story text.
+
+        **PREVIOUSLY REWRITTEN SCRIPT (Part ${partNumber - 1}):**
+        ---
+        ${previousRewrittenScript}
+        ---
+        `;
+        
+        const userContent = `
+        **FULL ORIGINAL SCRIPT (for context):**
+        ---
+        ${originalScript}
+        ---
+
+        Please now write Part ${partNumber} of ${totalParts}.`;
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-pro',
+            contents: userContent,
+            config: {
+                systemInstruction,
+            }
+        });
+
+        return response.text.trim();
+
+    } catch (error) {
+        console.error(`Lỗi khi viết tiếp kịch bản phần ${partNumber}:`, error);
+        if (error instanceof Error) {
+            throw new Error(`Đã xảy ra lỗi khi viết tiếp phần ${partNumber}: ${error.message}`);
+        }
+        throw new Error(`Đã xảy ra lỗi không xác định trong quá trình viết tiếp kịch bản.`);
     }
 };

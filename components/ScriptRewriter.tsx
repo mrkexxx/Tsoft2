@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import PageHeader from './PageHeader';
 import Loader from './Loader';
 import { ScriptAnalysisResult } from '../types';
-import { analyzeAndRewriteScript } from '../services/geminiService';
+import { analyzeAndRewriteScript, continueRewriteScript } from '../services/geminiService';
 
 interface ScriptRewriterProps {
     onGoHome: () => void;
@@ -47,6 +47,7 @@ const ScriptRewriter: React.FC<ScriptRewriterProps> = ({ onGoHome }) => {
     const [language, setLanguage] = useState<string>(languages[0]);
     const [targetDurationMinutes, setTargetDurationMinutes] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
+    const [loadingMessage, setLoadingMessage] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<ScriptAnalysisResult | null>(null);
     const [isCopied, setIsCopied] = useState(false);
@@ -97,13 +98,60 @@ const ScriptRewriter: React.FC<ScriptRewriterProps> = ({ onGoHome }) => {
             setError('Vui lòng nhập kịch bản cần phân tích và viết lại.');
             return;
         }
+
+        const totalDuration = Number(targetDurationMinutes);
+        if (targetDurationMinutes.trim() !== '' && (isNaN(totalDuration) || totalDuration < 0)) {
+            setError("Vui lòng nhập một thời lượng hợp lệ.");
+            return;
+        }
+
         setIsLoading(true);
         setError(null);
         setResult(null);
+
         try {
-            const duration = Number(targetDurationMinutes);
-            const analysisResult = await analyzeAndRewriteScript(script, tone, duration > 0 ? duration : 0, language);
-            setResult(analysisResult);
+            if (totalDuration <= 10 || !targetDurationMinutes.trim()) {
+                // Standard single-part generation
+                setLoadingMessage("AI đang phân tích và sáng tạo... Quá trình này có thể mất một lúc.");
+                const analysisResult = await analyzeAndRewriteScript(script, tone, totalDuration > 0 ? totalDuration : 0, language);
+                setResult(analysisResult);
+            } else {
+                // Multi-part generation
+                const numChunks = Math.ceil(totalDuration / 10);
+                
+                // Part 1: Full analysis + first 10 minutes of script
+                setLoadingMessage(`AI đang xử lý phần 1/${numChunks}...`);
+                const firstPartResult = await analyzeAndRewriteScript(script, tone, 10, language);
+                
+                let combinedRewrittenScript = firstPartResult.rewrittenScript;
+
+                // Parts 2 to N: Continue writing
+                for (let i = 2; i <= numChunks; i++) {
+                    setLoadingMessage(`AI đang xử lý phần ${i}/${numChunks}...`);
+                    const isLastChunk = i === numChunks;
+                    const chunkDuration = isLastChunk ? (totalDuration % 10 === 0 ? 10 : totalDuration % 10) : 10;
+                    
+                    const nextScriptPart = await continueRewriteScript(
+                        script, // full original script for context
+                        tone,
+                        language,
+                        chunkDuration,
+                        i,
+                        numChunks,
+                        combinedRewrittenScript // pass the already generated parts
+                    );
+                    
+                    combinedRewrittenScript += `\n\n${nextScriptPart}`;
+                }
+
+                // Combine results
+                const finalResult: ScriptAnalysisResult = {
+                    ...firstPartResult,
+                    rewrittenScript: combinedRewrittenScript,
+                };
+
+                setResult(finalResult);
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Đã xảy ra lỗi không xác định.');
         } finally {
@@ -148,7 +196,7 @@ const ScriptRewriter: React.FC<ScriptRewriterProps> = ({ onGoHome }) => {
         <div className="animate-fade-in max-w-5xl mx-auto">
             <PageHeader title="Viết lại kịch bản đối thủ" onBack={onGoHome} />
 
-            {isLoading && <Loader message="AI đang phân tích và sáng tạo... Quá trình này có thể mất một lúc." />}
+            {isLoading && <Loader message={loadingMessage || "AI đang phân tích và sáng tạo..."} />}
 
             {error && (
                 <div className="my-4 text-center bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded-lg" role="alert">
