@@ -1,4 +1,5 @@
 
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { GeneratedPrompt, YouTubeSeoResult, VideoAnalysisResult, ScriptAnalysisResult } from '../types';
 
@@ -813,6 +814,13 @@ export const analyzeAndRewriteScript = async (
         
         const systemInstruction = `You are an expert script analyst and screenwriter, specializing in transforming existing content for YouTube while avoiding policy violations. Your task is to perform a deep analysis of a competitor's script and rewrite it according to specific guidelines. The final output, including all analysis fields and the rewritten script, MUST be in ${language}.
 
+        **ABSOLUTELY CRITICAL RULE FOR REWRITTEN SCRIPT:**
+        The 'rewrittenScript' field in your JSON output MUST contain ONLY the story text (dialogue, narration). It must be a clean script ready for voiceover.
+        -   **ZERO** technical notes (e.g., "Chuyển cảnh", "Hết cảnh").
+        -   **ZERO** camera directions (e.g., "Cận cảnh", "Toàn cảnh").
+        -   **ZERO** parenthetical descriptions (e.g., "(hình ảnh tư liệu về...)", "(hiệu ứng âm thanh)").
+        -   The output must be ONLY the words that are meant to be spoken. This is the most important rule.
+
         **CRITICAL WORKFLOW:**
 
         1.  **Analyze & Structure (Step 1):**
@@ -821,15 +829,14 @@ export const analyzeAndRewriteScript = async (
             c.  **3-Act Structure:** Deconstruct the script into a classic three-act structure: Act 1 (Setup), Act 2 (Confrontation), Act 3 (Resolution). Summarize each act concisely.
 
         2.  **Rewrite (Step 2):**
-            a.  **Core Goal:** Rewrite the entire script. The new script MUST retain all original information, characters, events, and facts.
-            b.  **Transformation:** You MUST NOT simply change a few words. You must transform it by:
+            a.  **Core Goal:** Rewrite the entire script, following the **ABSOLUTELY CRITICAL RULE** stated above.
+            b.  **Transformation:** The new script MUST retain all original information, characters, events, and facts. You MUST NOT simply change a few words. You must transform it by:
                 -   Changing sentence structures significantly.
                 -   Using a rich vocabulary of synonyms.
                 -   Adding your own commentary, analysis, metaphors, or evaluations to provide new value (this is crucial for Fair Use).
             c.  **Tone/Persona Application:** Rewrite the script by adopting the persona and tone of a **"${tone}"**. Embody the characteristics of this persona in your writing style, vocabulary, and sentence structure.
             d.  **Target Duration (IMPORTANT):** ${targetCharCount ? `The user wants the rewritten script to be suitable for a video of approximately ${targetDurationMinutes} minute(s). You MUST adjust your rewrite to be around **${targetCharCount} characters** long. Expand on details or be more concise to meet this target.` : "Rewrite the script to a natural length based on the content."}
             e.  **Optimization:** Automatically insert a compelling hook at the beginning and a call-to-action (CTA) at the end. The CTA should encourage viewers to like, subscribe, and comment.
-            f.  **Clean Storytelling Output (CRITICAL):** The rewritten script MUST be pure narrative/dialogue text suitable for a voiceover. It MUST NOT contain any technical directions, scene transition notes (e.g., "Chuyển cảnh," "Hết cảnh"), camera instructions (e.g., "Cận cảnh," "Toàn cảnh"), or visual descriptions enclosed in parentheses (e.g., "(hình ảnh tư liệu)"). The output should only be the words that are meant to be spoken.
 
         3.  **Policy Check (Step 3):**
             a.  **Reuse Content:** Evaluate the rewritten script against the original. Provide a risk assessment (Low, Medium, High) and explain WHY.
@@ -937,11 +944,16 @@ export const continueRewriteScript = async (
         - **Your Goal:** Write the NEXT part of the script. It must seamlessly and logically continue from where the previous part ended.
 
         **CRITICAL INSTRUCTIONS:**
-        1.  **Continuity is Key:** Ensure the tone, characters, and plot are consistent with the previous part.
+        1.  **SEAMLESS CONTINUITY (ABSOLUTE MANDATORY):** Your output MUST be a direct continuation of the previously written script. Start writing immediately from the point where the previous text ended. There must be NO introduction, NO greeting, NO part number, and NO mention that this is a new section. The transition must be completely invisible to the reader.
         2.  **Adopt Persona:** Maintain the persona of a **"${tone}"**.
         3.  **Target Duration:** This new part should be approximately ${targetDurationMinutes} minute(s) long (around ${targetCharCount} characters).
         4.  **Language:** The output MUST be in ${language}.
-        5.  **Output Format:** Output ONLY the text for this new part. DO NOT include the analysis JSON, any preamble like "Here is Part ${partNumber}:", or repeat any of the previous script. Just the new text.
+        5.  **Output Format (STRICT):**
+            -   Output ONLY the text for this new part.
+            -   **DO NOT** include any preamble like "Here is Part ${partNumber}:", "Tiếp theo là phần 2:", "Chào mừng đến với phần 2", etc.
+            -   **DO NOT** repeat any of the previous script.
+            -   **DO NOT** add any analysis or JSON.
+            -   The output must be just the new story text and nothing else.
         6.  **Clean Storytelling Output (CRITICAL):** The script part you write MUST be pure narrative/dialogue text suitable for a voiceover. DO NOT include any technical directions, scene transition notes (e.g., "Chuyển cảnh"), camera instructions, or parenthetical visual descriptions. Just the new story text.
 
         **PREVIOUSLY REWRITTEN SCRIPT (Part ${partNumber - 1}):**
