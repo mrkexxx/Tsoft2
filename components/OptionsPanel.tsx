@@ -9,8 +9,11 @@ interface OptionsPanelProps {
   setPromptInterval: (interval: number) => void;
   style: string;
   setStyle: (style: string) => void;
-  onGeneratePrompts: () => void;
-  isLoadingPrompts: boolean;
+  characterNationality?: string;
+  setCharacterNationality?: (nat: string) => void;
+  onNextStep: () => void;
+  nextStepButtonText: string;
+  isLoading: boolean;
   scriptIsEmpty: boolean;
   disabled?: boolean;
 }
@@ -86,18 +89,20 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({
   setPromptInterval,
   style,
   setStyle,
-  onGeneratePrompts,
-  isLoadingPrompts,
+  characterNationality,
+  setCharacterNationality,
+  onNextStep,
+  nextStepButtonText,
+  isLoading,
   scriptIsEmpty,
   disabled = false,
 }) => {
   const totalSeconds = durationMinutes * 60 + durationSeconds;
   const numberOfImages = totalSeconds > 0 ? Math.round(totalSeconds / promptInterval) : 0;
-  const isAnyLoading = isLoadingPrompts;
 
   return (
     <div className="space-y-6 bg-dark-card p-6 rounded-lg border border-dark-border">
-      <h3 className="text-xl font-bold text-center text-white">Bước 1: Tùy chọn</h3>
+      <h3 className="text-xl font-bold text-center text-white">Tùy chọn</h3>
       
       <div className="space-y-2">
         <label htmlFor="duration-minutes" className="block text-md font-medium text-dark-text-secondary">
@@ -173,31 +178,53 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({
           ))}
         </select>
       </div>
+      
+      {characterNationality !== undefined && setCharacterNationality && (
+        <div className="space-y-2">
+          <label htmlFor="nationality" className="block text-md font-medium text-dark-text-secondary">
+              Quốc tịch nhân vật
+          </label>
+          <select
+              id="nationality"
+              value={characterNationality}
+              onChange={(e) => setCharacterNationality(e.target.value)}
+              className="w-full p-2 bg-gray-700 border border-dark-border rounded-md focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
+              disabled={disabled}
+          >
+              <option value="Default">Mặc định (AI tự nhận diện)</option>
+              <option value="Châu Âu">Châu Âu</option>
+              <option value="Châu Á">Châu Á</option>
+              <option value="Châu Phi">Châu Phi</option>
+              <option value="Nam Mỹ">Nam Mỹ</option>
+          </select>
+            <p className="text-xs text-dark-text-secondary mt-1">Áp dụng cho tất cả nhân vật trong kịch bản.</p>
+        </div>
+      )}
 
       <div className="flex flex-col space-y-3 pt-4 border-t border-dark-border">
         <button
-          onClick={onGeneratePrompts}
-          disabled={isAnyLoading || scriptIsEmpty || disabled}
+          onClick={onNextStep}
+          disabled={isLoading || scriptIsEmpty || disabled}
           className="w-full flex items-center justify-center py-3 px-4 font-bold text-white bg-brand-purple rounded-lg hover:bg-brand-light-purple disabled:bg-gray-500 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105"
         >
-          {isLoadingPrompts ? (
+          {isLoading ? (
              <>
               <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Đang tạo prompt...
+              Đang xử lý...
             </>
           ) : (
              <>
                 <LightningIcon />
-                Tạo Prompt
+                {nextStepButtonText}
              </>
           )}
         </button>
       </div>
 
-      {scriptIsEmpty && !isAnyLoading && <p className="text-center text-sm text-yellow-400 mt-2">Vui lòng nhập ý tưởng kịch bản.</p>}
+      {scriptIsEmpty && !isLoading && <p className="text-center text-sm text-yellow-400 mt-2">Vui lòng nhập ý tưởng kịch bản.</p>}
     </div>
   );
 };

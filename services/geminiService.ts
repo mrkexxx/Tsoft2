@@ -1,6 +1,7 @@
 
 
 
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { GeneratedPrompt, YouTubeSeoResult, VideoAnalysisResult, ScriptAnalysisResult } from '../types';
 
@@ -39,27 +40,35 @@ export const generatePromptsFromScript = async (
   numberOfPrompts: number,
   style: string,
   duration: number,
+  characters: { name: string; prompt: string }[]
 ): Promise<GeneratedPrompt[]> => {
   const ai = getAiClient();
   try {
     const styleInstruction = getStyleInstruction(style);
     
-    const systemInstruction = `You are an expert prompt engineer for AI multimedia generation. Your task is to analyze a VIETNAMESE script and break it down into timed segments, then generate detailed prompts in ENGLISH for both image and video generation. The total script duration is approximately ${duration} minutes.
+    const characterDefinitions = characters.length > 0
+      ? characters.map(c => `- ${c.name}: ${c.prompt}`).join('\n')
+      : "No characters defined for this script.";
+
+    const systemInstruction = `You are an expert prompt engineer for AI multimedia generation. Your task is to analyze a VIETNAMESE script and generate detailed prompts using the FIXED character descriptions provided below.
+
+    **FIXED Character Descriptions (You MUST use these EXACTLY as written, or assume no characters if the list is empty):**
+    ---
+    ${characterDefinitions}
+    ---
 
     **CRITICAL Instructions:**
-    1.  **Analyze Characters & Context FIRST:** Before generating any prompts, you MUST read the entire script to identify:
-        a.  All distinct characters. For each character, create a detailed and consistent physical description (e.g., "Linh, a 25-year-old woman with shoulder-length black hair, often seen in a simple white t-shirt and jeans, carrying a leather backpack").
-        b.  The overall time period and setting (e.g., "1990s Hanoi," "futuristic Ho Chi Minh City," "rural Vietnamese village").
-    2.  **Ensure Consistency:** You MUST reuse the exact same character descriptions and adhere to the identified setting in ALL relevant prompts to maintain visual continuity.
+    1.  **Adhere to Character Prompts:** The character list above is definitive. You MUST use the descriptions verbatim for any character that appears. If the list is empty, assume there are no recurring characters to track. Do NOT invent your own character descriptions.
+    2.  **Analyze Context:** Read the entire script to understand the overall time period and setting (e.g., "1990s Hanoi," "futuristic Ho Chi Minh City"). Adhere to this setting in all prompts for consistency.
     3.  **Time Segmentation:** Divide the script into exactly ${numberOfPrompts} sequential segments.
     4.  **Output per Segment:** For each segment, generate FOUR pieces of information:
         a.  **sceneName:** "Phân cảnh [Number] ([Start Time]s - [End Time]s)".
         b.  **sceneDescription:** A concise summary in VIETNAMESE.
-        c.  **imagePrompt:** A highly detailed description in ENGLISH for a STATIC image. Incorporate the character descriptions and setting details you identified.
-        d.  **videoPrompt:** A description in ENGLISH of the ACTION and MOVEMENT.
+        c.  **imagePrompt:** A highly detailed description in ENGLISH for a STATIC image. If characters from the list are present, you MUST prepend their FULL, FIXED descriptions to the start of the prompt. Incorporate the setting details. The prompt MUST end with the phrase ", no text, textless, no words, no letters".
+        d.  **videoPrompt:** A description in ENGLISH of the ACTION and MOVEMENT. If characters from the list are present, you MUST prepend their FULL, FIXED descriptions to the start of the prompt. Incorporate setting details. The prompt MUST end with the phrase ", no text, textless, no words, no letters".
     5.  **Integrate Style:** Both prompts MUST seamlessly incorporate: "${styleInstruction}".
     6.  **Language:** sceneName/sceneDescription = VIETNAMESE. imagePrompt/videoPrompt = ENGLISH.
-    7.  **Numbering:** Both the 'imagePrompt' and 'videoPrompt' fields MUST start with their corresponding segment number, followed by a period and a space (e.g., "1. ...", "2. ...", etc.).
+    7.  **Numbering:** Both 'imagePrompt' and 'videoPrompt' MUST start with their corresponding segment number, followed by a period and a space (e.g., "1. ...").
 
     Analyze the user's script and provide the JSON output.`;
 
@@ -91,11 +100,11 @@ export const generatePromptsFromScript = async (
               },
               imagePrompt: {
                 type: Type.STRING,
-                description: 'The final, complete, detailed visual prompt for a STATIC IMAGE in ENGLISH, MUST be prefixed with its sequential number (e.g., "1. [prompt text]"). It includes character descriptions and style elements.',
+                description: 'The final, complete, detailed visual prompt for a STATIC IMAGE in ENGLISH, MUST be prefixed with its sequential number (e.g., "1. [prompt text]"). It includes character descriptions, style elements, and text removal instructions.',
               },
               videoPrompt: {
                 type: Type.STRING,
-                description: 'The final, complete, detailed prompt for a VIDEO, describing MOTION and CAMERA MOVEMENT in ENGLISH, MUST be prefixed with its sequential number (e.g., "1. [prompt text]"). It includes character descriptions and style elements.'
+                description: 'The final, complete, detailed prompt for a VIDEO, describing MOTION and CAMERA MOVEMENT in ENGLISH, MUST be prefixed with its sequential number (e.g., "1. [prompt text]"). It includes character descriptions, style elements, and text removal instructions.'
               }
             },
             required: ['sceneName', 'sceneDescription', 'imagePrompt', 'videoPrompt']
