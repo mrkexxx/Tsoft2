@@ -3,16 +3,27 @@ import React, { useState } from 'react';
 interface PasswordProtectionProps {
   onSuccess: () => void;
   onClose: () => void;
+  passwordToMatch: string;
+  sessionKey: string;
+  title: string;
+  description: string;
 }
 
-const PasswordProtection: React.FC<PasswordProtectionProps> = ({ onSuccess, onClose }) => {
+const PasswordProtection: React.FC<PasswordProtectionProps> = ({ 
+  onSuccess, 
+  onClose, 
+  passwordToMatch, 
+  sessionKey,
+  title,
+  description 
+}) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === '123@') {
-      sessionStorage.setItem('vipAccessGranted', 'true');
+    if (password === passwordToMatch) {
+      sessionStorage.setItem(sessionKey, 'true');
       onSuccess();
     } else {
       setError('Mật khẩu không đúng. Vui lòng thử lại.');
@@ -32,8 +43,8 @@ const PasswordProtection: React.FC<PasswordProtectionProps> = ({ onSuccess, onCl
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
         </button>
-        <h2 className="text-2xl font-bold text-center text-yellow-400 mb-2">Yêu cầu quyền truy cập VIP</h2>
-        <p className="text-center text-dark-text-secondary mb-6">Tính năng này dành riêng cho khách hàng VIP.</p>
+        <h2 className="text-2xl font-bold text-center text-yellow-400 mb-2">{title}</h2>
+        <p className="text-center text-dark-text-secondary mb-6">{description}</p>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="password-input" className="sr-only">
@@ -44,7 +55,7 @@ const PasswordProtection: React.FC<PasswordProtectionProps> = ({ onSuccess, onCl
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Nhập mật khẩu VIP"
+              placeholder="Nhập mật khẩu"
               autoFocus
               className="w-full p-3 bg-gray-700 border border-dark-border rounded-lg text-center text-white focus:ring-2 focus:ring-brand-purple focus:border-brand-purple transition-all"
             />

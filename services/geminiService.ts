@@ -1,9 +1,5 @@
-
-
-
-
 import { GoogleGenAI, Type } from "@google/genai";
-import { GeneratedPrompt, YouTubeSeoResult, VideoAnalysisResult, ScriptAnalysisResult } from '../types';
+import { GeneratedPrompt, YouTubeSeoResult, VideoAnalysisResult, ScriptAnalysisResult, SunoPrompt } from '../types';
 
 const getAiClient = () => {
     const apiKey = localStorage.getItem('gemini-api-key');
@@ -996,5 +992,112 @@ export const continueRewriteScript = async (
             throw new Error(`Đã xảy ra lỗi khi viết tiếp phần ${partNumber}: ${error.message}`);
         }
         throw new Error(`Đã xảy ra lỗi không xác định trong quá trình viết tiếp kịch bản.`);
+    }
+};
+
+export const generateSunoPrompts = async (
+  userInput: string,
+  inputMode: 'idea' | 'lyrics',
+  options: {
+    genre: string;
+    mood: string;
+    vocals: string;
+    language: string;
+    instruments: string;
+  }
+): Promise<SunoPrompt[]> => {
+    const ai = getAiClient();
+    try {
+        const { genre, mood, vocals, language, instruments } = options;
+        const promptCount = 3; // Generate 3 variations by default
+
+        const systemInstruction = `You are a creative music producer and an expert prompt engineer for AI music generation tools like Suno and Udio. Your task is to generate unique, high-quality, and detailed music prompts based on the user's input and specifications.
+
+        **CRITICAL WORKFLOW:**
+        You will operate in one of two modes based on the user's 'inputMode'.
+
+        **Mode 1: 'idea'**
+        1.  The user provides a short theme or idea.
+        2.  Your FIRST task is to expand this idea into a **complete song with full lyrics** in the specified language (${language}). The song MUST have a clear structure (e.g., [Verse 1], [Chorus], [Verse 2], [Chorus], [Bridge], [Outro]).
+        3.  Your SECOND task is to analyze the song you just wrote and generate a creative song title and a detailed music prompt.
+        4.  The 'lyrics' field in the final JSON MUST contain the full lyrics you generated.
+
+        **Mode 2: 'lyrics'**
+        1.  The user provides their own complete song lyrics.
+        2.  Your task is to analyze these lyrics to understand their theme, mood, and structure.
+        3.  Generate a fitting song title and a detailed music prompt that matches the provided lyrics.
+        4.  The 'lyrics' field in the final JSON MUST contain the original, unchanged lyrics provided by the user.
+        
+        **ALL-MODE Instructions:**
+        1.  **Generate Variations:** Create exactly ${promptCount} different and creative variations. Each variation should offer a unique angle on the user's core concept.
+        2.  **Auto BPM (MANDATORY):** Based on the selected genre and mood, you MUST determine and include an appropriate BPM in the prompt string. For example: for 'Ballad', suggest a slow tempo like '70 BPM'; for 'EDM', suggest an energetic tempo like '128 BPM'.
+        3.  **Prompt Language:** The main descriptive part of the prompt MUST be in ENGLISH, as this is what AI music models understand best.
+        4.  **Song & Lyric Language:** The song title and the lyrics must be in the user-specified language: **${language}**.
+        5.  **Prompt Structure:** Each generated prompt must be a comprehensive, single-line string of descriptive tags.
+            - It MUST include: genre, mood, key instruments, vocal description (unless 'Không lời'), and the auto-generated BPM.
+            - If vocals are 'Không lời', the prompt must include tags like "instrumental" or "no lyrics".
+            - It MUST end with technical quality tags like: ", masterful composition, studio quality, rich reverb, stereo mix, 16-bit 44.1kHz".
+        6.  **Output Format:** Your final output MUST be a single, valid JSON array of objects. Each object represents one prompt variation and must contain three fields: "title", "prompt", and "lyrics".
+        `;
+
+        const userContent = `
+        **Input Mode:** "${inputMode}"
+        **User Input (Idea or Lyrics):**
+        ---
+        ${userInput}
+        ---
+        **Genre:** ${genre}
+        **Mood:** ${mood}
+        **Vocals:** ${vocals}
+        **Language for Title/Lyrics:** ${language}
+        **Main Instruments:** ${instruments}
+
+        Please generate the JSON output based on these details.
+        `;
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-pro',
+            contents: userContent,
+            config: {
+                systemInstruction,
+                responseMimeType: 'application/json',
+                responseSchema: {
+                    type: Type.ARRAY,
+                    items: {
+                        type: Type.OBJECT,
+                        properties: {
+                            title: {
+                                type: Type.STRING,
+                                description: `A creative and fitting song title in ${language}.`
+                            },
+                            prompt: {
+                                type: Type.STRING,
+                                description: "The full, detailed, single-line prompt in ENGLISH, including all musical and technical details and an auto-generated BPM."
+                            },
+                            lyrics: {
+                                type: Type.STRING,
+                                description: `The full song lyrics in ${language}. If inputMode was 'idea', this is the AI-generated lyrics. If inputMode was 'lyrics', this is the user's original lyrics.`
+                            }
+                        },
+                        required: ['title', 'prompt', 'lyrics']
+                    }
+                }
+            }
+        });
+
+        const parsedResponse: SunoPrompt[] = JSON.parse(response.text);
+
+        if (!parsedResponse || parsedResponse.length === 0) {
+            throw new Error("Không thể tạo prompt cho Suno.");
+        }
+        
+        return parsedResponse;
+
+    } catch (error) {
+        console.error("Lỗi khi tạo prompts cho Suno:", error);
+        if (error instanceof Error) {
+            throw new Error(`Đã xảy ra lỗi: ${error.message}`);
+        }
+        throw new Error("Đã xảy ra lỗi không xác định trong quá trình tạo prompts cho Suno.");
     }
 };

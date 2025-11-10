@@ -155,6 +155,7 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({
         >
           <option value={3}>Nhanh (3 giây / prompt)</option>
           <option value={5}>Tiêu chuẩn (5 giây / prompt)</option>
+          <option value={8}>Trung bình (8 giây / prompt)</option>
           <option value={10}>Chi tiết (10 giây / prompt)</option>
         </select>
          <p id="duration-helper" className="text-xs text-dark-text-secondary mt-1">Dự kiến tạo {numberOfImages} prompt.</p>

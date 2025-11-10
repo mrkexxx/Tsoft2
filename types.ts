@@ -71,3 +71,9 @@ export interface ScriptAnalysisResult {
   };
   rewrittenScript: string;
 }
+
+export interface SunoPrompt {
+  title: string;
+  prompt: string;
+  lyrics: string;
+}
