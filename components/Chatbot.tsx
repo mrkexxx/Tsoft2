@@ -168,16 +168,16 @@ const Chatbot: React.FC = () => {
     const renderInputArea = () => {
         if (phase === 'askingGender') {
             return (
-                <div className="p-4 border-t border-dark-border flex-shrink-0 flex items-center justify-center gap-4">
+                <div className="p-4 border-t border-dark-border flex-shrink-0 flex items-center justify-center gap-4 animate-fade-in-up">
                     <button 
                         onClick={() => handleGenderSelect('anh')}
-                        className="py-2 px-6 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"
+                        className="py-2 px-6 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-all transform hover:scale-105"
                     >
                         Anh
                     </button>
                     <button 
                         onClick={() => handleGenderSelect('chị')}
-                        className="py-2 px-6 bg-pink-600 text-white font-bold rounded-lg hover:bg-pink-700 transition-colors"
+                        className="py-2 px-6 bg-pink-600 text-white font-bold rounded-lg hover:bg-pink-700 transition-all transform hover:scale-105"
                     >
                         Chị
                     </button>
@@ -192,14 +192,14 @@ const Chatbot: React.FC = () => {
                         type="text"
                         value={userInput}
                         onChange={(e) => setUserInput(e.target.value)}
-                        placeholder={phase === 'askingName' ? 'Nhập tên của bạn...' : 'Hỏi tôi bất cứ điều gì...'}
-                        className="w-full p-2 bg-gray-700 border border-dark-border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple"
+                        placeholder={phase === 'askingName' ? 'Nhập tên của bạn...' : 'Hỏi tôi về các tính năng...'}
+                        className="w-full p-2 bg-gray-700 border border-dark-border rounded-lg focus:ring-2 focus:ring-brand-purple focus:border-brand-purple focus:ring-offset-2 focus:ring-offset-dark-card transition-all"
                         disabled={isLoading}
                         autoFocus
                     />
-                    <button type="submit" className="bg-brand-purple text-white rounded-lg p-2 disabled:bg-gray-500" disabled={isLoading || !userInput.trim()}>
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                    <button type="submit" className="bg-brand-purple text-white rounded-lg p-2 disabled:bg-gray-500 transition-colors transform hover:scale-110" disabled={isLoading || !userInput.trim()}>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 transform rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                         </svg>
                     </button>
                 </div>
@@ -209,28 +209,29 @@ const Chatbot: React.FC = () => {
 
     return (
         <>
-            <div className={`fixed bottom-8 right-8 z-40 transition-transform duration-300 ${isOpen ? 'translate-y-16 opacity-0' : 'translate-y-0 opacity-100'}`}>
+            <div className={`fixed bottom-8 right-8 z-40 transition-all duration-300 ${isOpen ? 'translate-y-16 opacity-0' : 'translate-y-0 opacity-100'}`}>
                 <button
                     onClick={handleToggle}
                     className="bg-brand-purple text-white rounded-full p-4 shadow-lg hover:bg-brand-light-purple focus:outline-none focus:ring-2 focus:ring-brand-light-purple focus:ring-offset-2 focus:ring-offset-dark-bg chatbot-pulse"
                     aria-label="Mở trợ lý AI"
+                    title="Hỏi Diệu Linh"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.898 20.562L16.25 22.5l-.648-1.938a3.375 3.375 0 00-2.456-2.456L11.25 18l1.938-.648a3.375 3.375 0 002.456-2.456L16.25 13l.648 1.938a3.375 3.375 0 002.456 2.456L21 18l-1.938.648a3.375 3.375 0 00-2.456 2.456z" />
                     </svg>
                 </button>
             </div>
             
-            <div className={`fixed bottom-0 right-0 sm:bottom-8 sm:right-8 w-full sm:w-96 h-full sm:h-[600px] bg-dark-card border-t-2 sm:border-2 border-dark-border rounded-t-2xl sm:rounded-2xl shadow-2xl z-50 flex flex-col transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-y-0' : 'translate-y-full'}`}>
-                <header className="flex items-center justify-between p-4 border-b border-dark-border flex-shrink-0">
-                    <div>
-                        <h2 className="text-lg font-bold text-white">Diệu Linh - Trợ lý AI</h2>
-                        <div className="flex items-center gap-1.5">
+            <div className={`fixed bottom-0 right-0 sm:bottom-8 sm:right-8 w-full sm:w-96 h-full sm:h-[600px] bg-dark-card border-t-2 sm:border sm:border-dark-border rounded-t-2xl sm:rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] z-50 flex flex-col transform transition-transform duration-500 ease-in-out ${isOpen ? 'translate-y-0' : 'translate-y-full'}`}>
+                <header className="relative flex items-center justify-center p-4 border-b border-dark-border flex-shrink-0">
+                    <div className="text-center">
+                        <h2 className="animated-gradient-text text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-500 to-brand-light-purple">Diệu Linh</h2>
+                         <div className="flex items-center justify-center gap-1.5">
                             <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
                             <p className="text-xs text-green-400">Đang hoạt động</p>
                         </div>
                     </div>
-                    <button onClick={handleToggle} className="text-dark-text-secondary hover:text-white" aria-label="Đóng trợ lý AI">
+                    <button onClick={handleToggle} className="absolute top-1/2 right-4 -translate-y-1/2 text-dark-text-secondary hover:text-white" aria-label="Đóng trợ lý AI">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -239,7 +240,7 @@ const Chatbot: React.FC = () => {
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                     {messages.map((msg, index) => (
-                        <div key={index} className={`flex items-end gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div key={index} className={`flex items-end gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in-up`}>
                             {msg.role === 'model' && (
                                 <img 
                                     src="https://sf-static.upanhlaylink.com/img/image_2025102296c3d021496f10ed4689a13895e23bcf.jpg" 
@@ -247,19 +248,19 @@ const Chatbot: React.FC = () => {
                                     className="w-8 h-8 rounded-full flex-shrink-0"
                                 />
                             )}
-                            <div className={`max-w-xs lg:max-w-sm px-4 py-2 rounded-2xl ${msg.role === 'user' ? 'bg-brand-purple text-white rounded-br-none' : 'bg-gray-700 text-dark-text rounded-bl-none'}`}>
+                            <div className={`max-w-xs lg:max-w-sm px-4 py-2 rounded-2xl shadow-md ${msg.role === 'user' ? 'bg-brand-purple text-white rounded-br-none' : 'bg-dark-border text-dark-text rounded-bl-none'}`}>
                                 <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
                             </div>
                         </div>
                     ))}
                     {isLoading && (
-                        <div className="flex items-end gap-2 justify-start">
+                        <div className="flex items-end gap-2 justify-start animate-fade-in-up">
                              <img 
                                 src="https://sf-static.upanhlaylink.com/img/image_2025102296c3d021496f10ed4689a13895e23bcf.jpg" 
                                 alt="Diệu Linh avatar" 
-                                className="w-8 h-8 rounded-full flex-shrink-0"
+                                className="w-8 h-8 rounded-full flex-shrink-0 avatar-glowing"
                             />
-                             <div className="max-w-xs lg:max-w-sm px-4 py-2 rounded-2xl bg-gray-700 text-dark-text rounded-bl-none">
+                             <div className="max-w-xs lg:max-w-sm px-4 py-2 rounded-2xl bg-dark-border text-dark-text rounded-bl-none shadow-md">
                                 <div className="typing-indicator">
                                     <span></span><span></span><span></span>
                                 </div>
@@ -269,10 +270,10 @@ const Chatbot: React.FC = () => {
                     <div ref={messagesEndRef} />
                     
                     {phase === 'chatting' && messages.length === 5 && !isLoading && (
-                        <div className="pt-4 space-y-2">
-                             <button onClick={() => sendSuggestedPrompt('Tạo ảnh theo kịch bản là gì?')} className="w-full text-left text-sm p-2 bg-gray-700/50 rounded-md hover:bg-gray-700">Tạo ảnh theo kịch bản là gì?</button>
-                             <button onClick={() => sendSuggestedPrompt('Tạo prompt Veo3 hoạt động thế nào?')} className="w-full text-left text-sm p-2 bg-gray-700/50 rounded-md hover:bg-gray-700">Tạo prompt Veo3 hoạt động thế nào?</button>
-                             <button onClick={() => sendSuggestedPrompt('Tính năng SEO Youtube có gì hay?')} className="w-full text-left text-sm p-2 bg-gray-700/50 rounded-md hover:bg-gray-700">Tính năng SEO Youtube có gì hay?</button>
+                        <div className="pt-4 flex flex-wrap gap-2 justify-center animate-fade-in-up">
+                             <button onClick={() => sendSuggestedPrompt('Tạo ảnh theo kịch bản là gì?')} className="text-sm py-1.5 px-3 bg-gray-700/50 rounded-full hover:bg-gray-700 transition-colors">Tạo ảnh theo kịch bản là gì?</button>
+                             <button onClick={() => sendSuggestedPrompt('Tạo prompt Veo3 hoạt động thế nào?')} className="text-sm py-1.5 px-3 bg-gray-700/50 rounded-full hover:bg-gray-700 transition-colors">Tạo prompt Veo3 hoạt động thế nào?</button>
+                             <button onClick={() => sendSuggestedPrompt('Tính năng SEO Youtube có gì hay?')} className="text-sm py-1.5 px-3 bg-gray-700/50 rounded-full hover:bg-gray-700 transition-colors">Tính năng SEO Youtube có gì hay?</button>
                         </div>
                     )}
 

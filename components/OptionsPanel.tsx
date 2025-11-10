@@ -5,6 +5,8 @@ interface OptionsPanelProps {
   setDurationMinutes: (duration: number) => void;
   durationSeconds: number;
   setDurationSeconds: (duration: number) => void;
+  promptInterval: number;
+  setPromptInterval: (interval: number) => void;
   style: string;
   setStyle: (style: string) => void;
   onGeneratePrompts: () => void;
@@ -80,6 +82,8 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({
   setDurationMinutes,
   durationSeconds,
   setDurationSeconds,
+  promptInterval,
+  setPromptInterval,
   style,
   setStyle,
   onGeneratePrompts,
@@ -88,7 +92,7 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({
   disabled = false,
 }) => {
   const totalSeconds = durationMinutes * 60 + durationSeconds;
-  const numberOfImages = Math.round(totalSeconds / 5);
+  const numberOfImages = totalSeconds > 0 ? Math.round(totalSeconds / promptInterval) : 0;
   const isAnyLoading = isLoadingPrompts;
 
   return (
@@ -131,7 +135,24 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({
             />
             <span className="text-dark-text-secondary">giây</span>
         </div>
-        <p id="duration-helper" className="text-xs text-dark-text-secondary mt-1">({numberOfImages} prompt) - Mỗi 5 giây của kịch bản sẽ tương ứng với 1 prompt.</p>
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor="prompt-interval" className="block text-md font-medium text-dark-text-secondary">
+          Tần suất Prompt
+        </label>
+        <select
+          id="prompt-interval"
+          value={promptInterval}
+          onChange={(e) => setPromptInterval(Number(e.target.value))}
+          className="w-full p-2 bg-gray-700 border border-dark-border rounded-md focus:ring-2 focus:ring-brand-purple focus:border-brand-purple disabled:opacity-50"
+          disabled={disabled}
+        >
+          <option value={3}>Nhanh (3 giây / prompt)</option>
+          <option value={5}>Tiêu chuẩn (5 giây / prompt)</option>
+          <option value={10}>Chi tiết (10 giây / prompt)</option>
+        </select>
+         <p id="duration-helper" className="text-xs text-dark-text-secondary mt-1">Dự kiến tạo {numberOfImages} prompt.</p>
       </div>
 
       <div className="space-y-2">

@@ -107,6 +107,28 @@
           animation: vip-glow-spin 4s linear infinite;
           z-index: -1; /* Place the gradient behind the card */
       }
+      /* === Chatbot Animations === */
+      @keyframes fade-in-up {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-fade-in-up {
+        animation: fade-in-up 0.4s ease-out forwards;
+      }
+      @keyframes avatar-glow {
+        0% { box-shadow: 0 0 0 0 rgba(167, 139, 250, 0.5); }
+        50% { box-shadow: 0 0 0 6px rgba(167, 139, 250, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(167, 139, 250, 0); }
+      }
+      .avatar-glowing {
+        animation: avatar-glow 1.5s infinite;
+      }
     </style>
   <script type="importmap">
 {
