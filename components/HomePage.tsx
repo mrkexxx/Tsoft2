@@ -214,31 +214,41 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNaviga
             }
             onClick={onNavigateToVideoAnalyzer}
         />
-        <div className="vip-card-container">
-            <ToolCard
-                title="Tsoft Melody - Trợ lý tạo prompt Suno (VIP)"
-                description="Tạo prompt nhạc chuyên nghiệp cho Suno, Udio. Gợi ý thể loại, cảm xúc, lời bài hát và cấu trúc."
-                icon={
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 6l12-3" />
-                  </svg>
-                }
-                onClick={onNavigateToSunoPromptGenerator}
-            />
-        </div>
-        <div className="vip-card-container">
-            <ToolCard 
-                title="Viết lại kịch bản đối thủ (VIP)"
-                description="Phân tích kịch bản của đối thủ, gán vai, và viết lại để tránh Reuse Content, tối ưu cho Tsoft/VEO3."
-                icon={
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                    </svg>
-                }
-                onClick={onNavigateToScriptRewriter}
-            />
-        </div>
       </div>
+
+      <section className="mt-16 md:mt-24">
+        <div className="text-center mb-10">
+          <h2 className="animated-gradient-text text-3xl md:text-4xl font-bold text-white bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-500">
+            Khu vực VIP (Khách hàng thân thiết của Tsoft)
+          </h2>
+        </div>
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="vip-card-container">
+                <ToolCard
+                    title="Tsoft Melody - Trợ lý tạo prompt Suno (VIP)"
+                    description="Tạo prompt nhạc chuyên nghiệp cho Suno, Udio. Gợi ý thể loại, cảm xúc, lời bài hát và cấu trúc."
+                    icon={
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 6l12-3" />
+                      </svg>
+                    }
+                    onClick={onNavigateToSunoPromptGenerator}
+                />
+            </div>
+            <div className="vip-card-container">
+                <ToolCard 
+                    title="Viết lại kịch bản đối thủ (VIP)"
+                    description="Phân tích kịch bản của đối thủ, gán vai, và viết lại để tránh Reuse Content, tối ưu cho Tsoft/VEO3."
+                    icon={
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                        </svg>
+                    }
+                    onClick={onNavigateToScriptRewriter}
+                />
+            </div>
+        </div>
+      </section>
 
        <section className="mt-24 max-w-4xl mx-auto">
         <h2 className="animated-gradient-text text-3xl md:text-4xl font-bold text-center mb-10 text-white bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-brand-light-purple">

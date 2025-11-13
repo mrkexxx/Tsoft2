@@ -67,6 +67,7 @@ const animationStyles = [
   'Memphis',
   'Brutalist',
   'Ink Drawing',
+  'Hand-drawn',
 ];
 
 const DownloadIcon: React.FC = () => (

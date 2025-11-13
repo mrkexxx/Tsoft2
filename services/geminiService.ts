@@ -18,6 +18,7 @@ const getStyleInstruction = (style: string): string => {
     'Tranh vẽ thuỷ mặc': 'Chinese ink wash painting style, minimalist, elegant brushstrokes, traditional art, high contrast, 16:9 aspect ratio',
     'Vibe cổ họa Việt Nam': 'Vietnamese antique art style, reminiscent of Nguyen dynasty woodblock prints and lacquer paintings (sơn mài), traditional color palette, detailed cultural attire (like áo dài) and architecture, 16:9 aspect ratio',
     'Người que (Stick Figure)': 'simple stick figure drawing style, minimalist, black and white, clean lines, expressive poses, on a plain white background, 16:9 aspect ratio',
+    'Hand-drawn': 'hand-drawn animation style, sketchy, textured, organic feel, 16:9 aspect ratio',
   };
 
   if (styleMap[style]) {
@@ -1011,7 +1012,7 @@ export const generateSunoPrompts = async (
         const { genre, mood, vocals, language, instruments } = options;
         const promptCount = 3; // Generate 3 variations by default
 
-        const systemInstruction = `You are a creative music producer and an expert prompt engineer for AI music generation tools like Suno and Udio. Your task is to generate unique, high-quality, and detailed music prompts based on the user's input and specifications.
+        const systemInstruction = `You are a creative music producer and an expert prompt engineer for AI music generation tools like Suno. Your task is to generate unique, high-quality, and detailed music prompts based on the user's input and specifications.
 
         **CRITICAL WORKFLOW:**
         You will operate in one of two modes based on the user's 'inputMode'.
@@ -1037,7 +1038,12 @@ export const generateSunoPrompts = async (
             - It MUST include: genre, mood, key instruments, vocal description (unless 'Không lời'), and the auto-generated BPM.
             - If vocals are 'Không lời', the prompt must include tags like "instrumental" or "no lyrics".
             - It MUST end with technical quality tags like: ", masterful composition, studio quality, rich reverb, stereo mix, 16-bit 44.1kHz".
-        6.  **Output Format:** Your final output MUST be a single, valid JSON array of objects. Each object represents one prompt variation and must contain three fields: "title", "prompt", and "lyrics".
+        
+        6.  **Generate Suno Settings (MANDATORY):** For each variation, you MUST also generate recommended settings for 'Weirdness' and 'Style Influence' in VIETNAMESE.
+            - **Weirdness:** Provide a percentage range (e.g., '0% - 25%'). This controls creativity vs. predictability. Explain your choice briefly.
+            - **Style Influence:** Provide a percentage range (e.g., '50% - 75%'). This controls how strongly the prompt's style tags influence the output. Explain your choice briefly.
+
+        7.  **Output Format:** Your final output MUST be a single, valid JSON array of objects. Each object represents one prompt variation and must contain all the required fields.
         `;
 
         const userContent = `
@@ -1077,9 +1083,25 @@ export const generateSunoPrompts = async (
                             lyrics: {
                                 type: Type.STRING,
                                 description: `The full song lyrics in ${language}. If inputMode was 'idea', this is the AI-generated lyrics. If inputMode was 'lyrics', this is the user's original lyrics.`
+                            },
+                            weirdness: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    value: { type: Type.STRING, description: "Recommended percentage range for Weirdness (e.g., '0% - 20%')." },
+                                    explanation: { type: Type.STRING, description: "Brief explanation for the Weirdness setting in VIETNAMESE." }
+                                },
+                                required: ['value', 'explanation']
+                            },
+                            styleInfluence: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    value: { type: Type.STRING, description: "Recommended percentage range for Style Influence (e.g., '60% - 80%')." },
+                                    explanation: { type: Type.STRING, description: "Brief explanation for the Style Influence setting in VIETNAMESE." }
+                                },
+                                required: ['value', 'explanation']
                             }
                         },
-                        required: ['title', 'prompt', 'lyrics']
+                        required: ['title', 'prompt', 'lyrics', 'weirdness', 'styleInfluence']
                     }
                 }
             }

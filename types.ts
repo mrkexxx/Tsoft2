@@ -76,4 +76,12 @@ export interface SunoPrompt {
   title: string;
   prompt: string;
   lyrics: string;
+  weirdness: {
+    value: string;
+    explanation: string;
+  };
+  styleInfluence: {
+    value: string;
+    explanation: string;
+  };
 }

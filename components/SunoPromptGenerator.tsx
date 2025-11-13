@@ -198,7 +198,7 @@ const SunoPromptGenerator: React.FC<SunoPromptGeneratorProps> = ({ onGoHome }) =
                             </div>
                         )}
                         
-                        <div>
+                        <div className="mb-4">
                             <p className="text-sm font-medium text-dark-text-secondary mb-1">Prompt đầy đủ (sẵn sàng để sao chép)</p>
                             <div className="relative">
                                 <p className="p-3 pr-12 bg-gray-900/50 rounded-md text-sm text-cyan-300 font-mono leading-relaxed">
@@ -213,6 +213,21 @@ const SunoPromptGenerator: React.FC<SunoPromptGeneratorProps> = ({ onGoHome }) =
                                 </button>
                             </div>
                         </div>
+
+                        <div className="mt-4 pt-4 border-t border-dark-border/50">
+                            <h4 className="text-md font-semibold text-white mb-3">Hướng dẫn cài đặt cho Suno</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                                <div className="bg-gray-900/50 p-3 rounded-md">
+                                    <p className="font-bold text-dark-text-secondary">Weirdness: <span className="font-mono text-yellow-400">{result.weirdness.value}</span></p>
+                                    <p className="text-dark-text-secondary mt-1 italic">{result.weirdness.explanation}</p>
+                                </div>
+                                <div className="bg-gray-900/50 p-3 rounded-md">
+                                    <p className="font-bold text-dark-text-secondary">Style Influence: <span className="font-mono text-yellow-400">{result.styleInfluence.value}</span></p>
+                                    <p className="text-dark-text-secondary mt-1 italic">{result.styleInfluence.explanation}</p>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 ))}
             </div>
