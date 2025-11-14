@@ -15,10 +15,12 @@ import VideoAnalyzer from './components/VideoAnalyzer';
 import ScriptRewriter from './components/ScriptRewriter';
 import PasswordProtection from './components/PasswordProtection';
 import SunoPromptGenerator from './components/SunoPromptGenerator';
+import TemporaryLockPopup from './components/TemporaryLockPopup';
 
 type Page = 'home' | 'scriptToImage' | 'veoAnimation' | 'history' | 'articleDetail' | 'thumbnailGenerator' | 'youtubeSeo' | 'apiKeySetup' | 'videoAnalyzer' | 'scriptRewriter' | 'sunoPromptGenerator';
 
 const App: React.FC = () => {
+  const [isLocked] = useState<boolean>(true);
   const [hasApiKey, setHasApiKey] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
@@ -120,7 +122,12 @@ const App: React.FC = () => {
   };
 
   if (!hasApiKey) {
-    return <ApiKeySetup onSuccess={handleApiKeySuccess} />;
+    return (
+        <>
+            {isLocked && <TemporaryLockPopup />}
+            <ApiKeySetup onSuccess={handleApiKeySuccess} />
+        </>
+    );
   }
 
   const renderPage = () => {
@@ -158,6 +165,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-dark-bg text-dark-text">
+      {isLocked && <TemporaryLockPopup />}
       {showInfoPopup && <InfoPopup onClose={() => setShowInfoPopup(false)} />}
       {showVipPopup && <PasswordProtection 
         onSuccess={handleVipSuccess} 
