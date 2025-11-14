@@ -30,7 +30,7 @@ const tones = [
 ];
 
 const languages = [
-    'Vietnamese', 'English', 'Chinese (Mandarin)', 'Spanish', 'Arabic', 'French', 'Hindi', 'Portuguese', 'Japanese', 'Korean'
+    'Vietnamese', 'English', 'German', 'Chinese (Mandarin)', 'Spanish', 'Arabic', 'French', 'Hindi', 'Portuguese', 'Japanese', 'Korean'
 ];
 
 
