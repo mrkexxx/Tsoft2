@@ -100,6 +100,8 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNaviga
         seconds: 0,
         isTimeUp: false,
     });
+    
+    const [quote, setQuote] = useState({ text: '', author: '' });
 
     useEffect(() => {
         // Tết 2026 is on February 17, 2026
@@ -124,6 +126,18 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNaviga
         }, 1000);
 
         return () => clearInterval(interval);
+    }, []);
+    
+     useEffect(() => {
+        const quotes = [
+            { text: "Thành công là tổng hợp của những nỗ lực nhỏ, lặp đi lặp lại ngày này qua ngày khác.", author: "Robert Collier" },
+            { text: "Sự kiên trì có thể biến thất bại thành thành tựu phi thường.", author: "Matt Biondi" },
+            { text: "Cách tốt nhất để dự đoán tương lai là tạo ra nó.", author: "Peter Drucker" },
+            { text: "Thành công không phải là cuối cùng, thất bại không phải là chết người: lòng can đảm đi tiếp mới quan trọng.", author: "Winston Churchill" },
+            { text: "Người thành công là người bình thường nhưng có sự quyết tâm phi thường.", author: "Khuyết danh" }
+        ];
+        const randomIndex = Math.floor(Math.random() * quotes.length);
+        setQuote(quotes[randomIndex]);
     }, []);
 
   return (
@@ -157,6 +171,14 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNaviga
                         <span className="block text-xs sm:text-sm text-dark-text-secondary mt-1">Giây</span>
                     </div>
                 </div>
+                 {quote.text && (
+                    <div className="mt-6 text-center px-4">
+                        <blockquote className="text-lg italic text-dark-text-secondary">
+                            "{quote.text}"
+                        </blockquote>
+                        <cite className="block text-sm text-dark-text-secondary mt-2 not-italic">— {quote.author}</cite>
+                    </div>
+                )}
             </div>
         </section>
 
