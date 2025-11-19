@@ -32,6 +32,17 @@ const getStyleInstruction = (style: string): string => {
   return `${style} style, 16:9 aspect ratio`;
 };
 
+const fileToGenerativePart = async (file: File) => {
+  const base64EncodedDataPromise = new Promise<string>((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+    reader.readAsDataURL(file);
+  });
+  return {
+    inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
+  };
+};
+
 export const generatePromptsFromScript = async (
   script: string,
   numberOfPrompts: number,
@@ -248,6 +259,45 @@ export const refineThumbnailPrompt = async (
     }
     throw new Error("Đã xảy ra lỗi không xác định trong quá trình chỉnh sửa prompt.");
   }
+};
+
+export const generateMotionPromptForImage = async (imageFile: File): Promise<string> => {
+    const ai = getAiClient();
+    try {
+        const imagePart = await fileToGenerativePart(imageFile);
+
+        const systemInstruction = `You are an expert cinematic video director. Your task is to analyze a static image and create a compelling, high-quality **video generation prompt** (motion prompt) that brings the image to life.
+
+        **Instructions:**
+        1.  **Analyze the Image:** Identify the subject, setting, mood, lighting, and style.
+        2.  **Determine Motion:** Decided on the most appropriate and visually stunning movement for this scene. Examples:
+            -   *Camera movement:* Slow pan, zoom in, dolly out, tracking shot, aerial view.
+            -   *Subject movement:* Walking, smiling, wind blowing hair, leaves rustling, water flowing, lights flickering, clouds moving.
+        3.  **Write the Prompt:** Create a concise but descriptive prompt in **ENGLISH** suitable for AI video generators like Gen-2, Pika, or Veo.
+        4.  **Format:** The prompt should describe the visual content briefly and then focus heavily on the **action and camera movement**.
+        5.  **Output:** Return ONLY the prompt text. Do not include preambles like "Here is the prompt".
+
+        **Example Output:**
+        "Cinematic close-up of an elderly man, detailed wrinkles, soft lighting. The camera slowly zooms in on his eyes as he blinks. Dust motes dance in the light rays. High resolution, 4k."
+        `;
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: { parts: [imagePart, { text: "Create a motion prompt for this image." }] },
+            config: {
+                systemInstruction,
+            },
+        });
+
+        return response.text.trim();
+
+    } catch (error) {
+        console.error("Lỗi khi tạo prompt chuyển động:", error);
+        if (error instanceof Error) {
+            throw new Error(`Không thể tạo prompt: ${error.message}`);
+        }
+        throw new Error("Đã xảy ra lỗi không xác định.");
+    }
 };
 
 export const identifyCharactersFromScript = async (script: string, characterNationality: string): Promise<{ name: string; prompt: string }[]> => {
@@ -635,17 +685,6 @@ export const generateYouTubeSeo = async (
     }
     throw new Error("Đã xảy ra lỗi không xác định trong quá trình tạo dữ liệu SEO.");
   }
-};
-
-const fileToGenerativePart = async (file: File) => {
-  const base64EncodedDataPromise = new Promise<string>((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
-    reader.readAsDataURL(file);
-  });
-  return {
-    inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
-  };
 };
 
 export const analyzeVideoFromFile = async (videoFile: File): Promise<VideoAnalysisResult> => {

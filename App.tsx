@@ -8,11 +8,12 @@ import ArticleViewer from './components/ArticleViewer';
 import ThumbnailGenerator from './components/ThumbnailGenerator';
 import YouTubeSeoGenerator from './components/YouTubeSeoGenerator';
 import ApiKeySetup from './components/ApiKeySetup';
+import ImageToMotionGenerator from './components/ImageToMotionGenerator';
 import { Article } from './types';
 import Chatbot from './components/Chatbot';
 import VideoAnalyzer from './components/VideoAnalyzer';
 
-type Page = 'home' | 'scriptToImage' | 'veoAnimation' | 'history' | 'articleDetail' | 'thumbnailGenerator' | 'youtubeSeo' | 'apiKeySetup' | 'videoAnalyzer';
+type Page = 'home' | 'scriptToImage' | 'veoAnimation' | 'history' | 'articleDetail' | 'thumbnailGenerator' | 'youtubeSeo' | 'apiKeySetup' | 'videoAnalyzer' | 'imageToMotion';
 
 const App: React.FC = () => {
   const [hasApiKey, setHasApiKey] = useState<boolean>(false);
@@ -61,6 +62,11 @@ const App: React.FC = () => {
     setSelectedArticle(null);
   };
 
+  const navigateToImageToMotion = () => {
+    setCurrentPage('imageToMotion');
+    setSelectedArticle(null);
+  };
+
   const navigateHome = () => {
     setCurrentPage('home');
     setSelectedArticle(null);
@@ -87,7 +93,16 @@ const App: React.FC = () => {
   const renderPage = () => {
     switch (currentPage) {
         case 'home':
-            return <HomePage onNavigateToScriptToImage={navigateToScriptToImage} onNavigateToVeoAnimation={navigateToVeoAnimation} onNavigateToThumbnailGenerator={navigateToThumbnailGenerator} onNavigateToYouTubeSeo={navigateToYouTubeSeo} onNavigateToVideoAnalyzer={navigateToVideoAnalyzer} />;
+            return (
+                <HomePage 
+                    onNavigateToScriptToImage={navigateToScriptToImage} 
+                    onNavigateToVeoAnimation={navigateToVeoAnimation} 
+                    onNavigateToThumbnailGenerator={navigateToThumbnailGenerator} 
+                    onNavigateToYouTubeSeo={navigateToYouTubeSeo} 
+                    onNavigateToVideoAnalyzer={navigateToVideoAnalyzer}
+                    onNavigateToImageToMotion={navigateToImageToMotion}
+                />
+            );
         case 'scriptToImage':
             return <ScriptToImageGenerator onGoHome={navigateHome} />;
         case 'veoAnimation':
@@ -98,6 +113,8 @@ const App: React.FC = () => {
             return <YouTubeSeoGenerator onGoHome={navigateHome} />;
         case 'videoAnalyzer':
             return <VideoAnalyzer onGoHome={navigateHome} />;
+        case 'imageToMotion':
+            return <ImageToMotionGenerator onGoHome={navigateHome} />;
         case 'history':
             return <HistoryPage onGoHome={navigateHome} onNavigateToArticle={navigateToArticleDetail} />;
         case 'articleDetail':
@@ -109,7 +126,16 @@ const App: React.FC = () => {
         case 'apiKeySetup':
             return <ApiKeySetup onSuccess={handleApiKeySuccess} />;
         default:
-            return <HomePage onNavigateToScriptToImage={navigateToScriptToImage} onNavigateToVeoAnimation={navigateToVeoAnimation} onNavigateToThumbnailGenerator={navigateToThumbnailGenerator} onNavigateToYouTubeSeo={navigateToYouTubeSeo} onNavigateToVideoAnalyzer={navigateToVideoAnalyzer} />;
+            return (
+                <HomePage 
+                    onNavigateToScriptToImage={navigateToScriptToImage} 
+                    onNavigateToVeoAnimation={navigateToVeoAnimation} 
+                    onNavigateToThumbnailGenerator={navigateToThumbnailGenerator} 
+                    onNavigateToYouTubeSeo={navigateToYouTubeSeo} 
+                    onNavigateToVideoAnalyzer={navigateToVideoAnalyzer}
+                    onNavigateToImageToMotion={navigateToImageToMotion}
+                />
+            );
     }
   }
 

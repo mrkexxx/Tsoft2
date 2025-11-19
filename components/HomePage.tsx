@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 
 interface HomePageProps {
@@ -6,15 +7,21 @@ interface HomePageProps {
   onNavigateToThumbnailGenerator: () => void;
   onNavigateToYouTubeSeo: () => void;
   onNavigateToVideoAnalyzer: () => void;
+  onNavigateToImageToMotion: () => void;
 }
 
 // FIX: Replaced JSX.Element with React.ReactElement to resolve "Cannot find namespace 'JSX'" error.
-const ToolCard: React.FC<{ title: string; description: string; icon: React.ReactElement; onClick: () => void; }> = ({ title, description, icon, onClick }) => {
+const ToolCard: React.FC<{ title: string; description: string; icon: React.ReactElement; onClick: () => void; isNew?: boolean; }> = ({ title, description, icon, onClick, isNew }) => {
     return (
         <div 
             onClick={onClick}
             className="group relative bg-dark-card p-8 rounded-xl border border-dark-border hover:border-brand-purple/50 transition-all duration-300 cursor-pointer overflow-hidden h-full flex flex-col"
         >
+            {isNew && (
+                <span className="absolute top-4 right-4 bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse z-20 border border-white/20">
+                    NEW
+                </span>
+            )}
             <div className="absolute -inset-px bg-gradient-to-r from-purple-700 to-brand-light-purple rounded-xl opacity-0 group-hover:opacity-70 transition-opacity duration-300 blur-lg" aria-hidden="true"></div>
             
             <div className="relative z-10 flex flex-col h-full">
@@ -57,7 +64,7 @@ const CommunityLink: React.FC<{ title: string; description: string; href: string
 );
 
 
-const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNavigateToVeoAnimation, onNavigateToThumbnailGenerator, onNavigateToYouTubeSeo, onNavigateToVideoAnalyzer }) => {
+const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNavigateToVeoAnimation, onNavigateToThumbnailGenerator, onNavigateToYouTubeSeo, onNavigateToVideoAnalyzer, onNavigateToImageToMotion }) => {
     const defaultCommunityIcon = (
         <div className="bg-brand-purple/20 p-3 rounded-lg">
              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-brand-light-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -202,6 +209,17 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNaviga
                 </svg>
             }
             onClick={onNavigateToVeoAnimation}
+        />
+        <ToolCard 
+            title="Tạo Prompt Chuyển Động Hàng Loạt"
+            description="Tải lên nhiều ảnh cùng lúc, AI sẽ tạo prompt chuyển động (motion prompt) cho từng ảnh để làm video."
+            icon={
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
+                </svg>
+            }
+            onClick={onNavigateToImageToMotion}
+            isNew={true}
         />
          <ToolCard 
             title="Tạo Thumbnail theo ảnh mẫu"
