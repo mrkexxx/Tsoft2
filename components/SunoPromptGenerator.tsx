@@ -89,7 +89,7 @@ const SunoPromptGenerator: React.FC<SunoPromptGeneratorProps> = ({ onGoHome }) =
         {/* === CỘT TRÁI: ĐIỀU KHIỂN === */}
         <div className="lg:col-span-4">
           <div className="bg-dark-card p-6 rounded-lg border border-dark-border space-y-6 sticky top-8">
-            <h2 className="text-2xl font-bold text-white">1. Nhập liệu</h2>
+            <h2 className="text-2xl font-bold text-heading">1. Nhập liệu</h2>
             <div className="space-y-3">
                 <div className="flex justify-around bg-gray-900/50 p-1 rounded-lg">
                     <button
@@ -118,7 +118,7 @@ const SunoPromptGenerator: React.FC<SunoPromptGeneratorProps> = ({ onGoHome }) =
                 />
             </div>
             
-            <h2 className="text-2xl font-bold text-white pt-4 border-t border-dark-border">2. Tùy chỉnh</h2>
+            <h2 className="text-2xl font-bold text-heading pt-4 border-t border-dark-border">2. Tùy chỉnh</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
                   <label htmlFor="genre-select" className="block text-sm font-medium text-dark-text-secondary mb-1">Thể loại</label>
@@ -163,7 +163,7 @@ const SunoPromptGenerator: React.FC<SunoPromptGeneratorProps> = ({ onGoHome }) =
         {/* === CỘT PHẢI: KẾT QUẢ === */}
         <div className="lg:col-span-8">
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-white">3. Kết quả</h2>
+                <h2 className="text-2xl font-bold text-heading">3. Kết quả</h2>
                 {results.length > 0 && (
                      <button
                         onClick={() => handleGenerate(true)}
@@ -180,7 +180,7 @@ const SunoPromptGenerator: React.FC<SunoPromptGeneratorProps> = ({ onGoHome }) =
                 {results.length === 0 && !isLoading && (
                     <div className="text-center py-16 px-6 bg-dark-card border-2 border-dashed border-dark-border rounded-lg">
                         <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 6l12-3" /></svg>
-                        <h3 className="mt-2 text-xl font-semibold text-white">Prompt của bạn sẽ xuất hiện ở đây</h3>
+                        <h3 className="mt-2 text-xl font-semibold text-heading">Prompt của bạn sẽ xuất hiện ở đây</h3>
                         <p className="mt-1 text-md text-dark-text-secondary">Nhập ý tưởng và bấm "Tạo Prompt" để bắt đầu.</p>
                     </div>
                 )}

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 
 interface HomePageProps {
@@ -8,6 +7,7 @@ interface HomePageProps {
   onNavigateToYouTubeSeo: () => void;
   onNavigateToVideoAnalyzer: () => void;
   onNavigateToImageToMotion: () => void;
+  onNavigateToVideoToJpg: () => void;
 }
 
 // FIX: Replaced JSX.Element with React.ReactElement to resolve "Cannot find namespace 'JSX'" error.
@@ -28,7 +28,7 @@ const ToolCard: React.FC<{ title: string; description: string; icon: React.React
                 <div className="bg-brand-purple/20 p-4 rounded-lg text-brand-light-purple inline-block mb-6 self-start">
                     {icon}
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-3">{title}</h3>
+                <h3 className="text-2xl font-bold text-heading mb-3">{title}</h3>
                 <p className="text-dark-text-secondary mb-6 flex-grow">{description}</p>
                 <div className="flex items-center text-brand-light-purple font-semibold mt-auto">
                     <span>Bắt đầu</span>
@@ -53,10 +53,10 @@ const CommunityLink: React.FC<{ title: string; description: string; href: string
                  {icon}
             </div>
             <div className="flex-1">
-                <h4 className="font-bold text-lg text-white">{title}</h4>
+                <h4 className="font-bold text-lg text-heading">{title}</h4>
                 <p className="text-sm text-dark-text-secondary">{description}</p>
             </div>
-             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2 text-dark-text-secondary transform group-hover:translate-x-1 group-hover:text-white transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-2 text-dark-text-secondary transform group-hover:translate-x-1 group-hover:text-heading transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
         </div>
@@ -64,7 +64,7 @@ const CommunityLink: React.FC<{ title: string; description: string; href: string
 );
 
 
-const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNavigateToVeoAnimation, onNavigateToThumbnailGenerator, onNavigateToYouTubeSeo, onNavigateToVideoAnalyzer, onNavigateToImageToMotion }) => {
+const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNavigateToVeoAnimation, onNavigateToThumbnailGenerator, onNavigateToYouTubeSeo, onNavigateToVideoAnalyzer, onNavigateToImageToMotion, onNavigateToVideoToJpg }) => {
     const defaultCommunityIcon = (
         <div className="bg-brand-purple/20 p-3 rounded-lg">
              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-brand-light-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -157,7 +157,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNaviga
                 Đồng nhất nhân vật và ảnh minh hoạ bám theo kịch bản storyboard
             </h2>
             <div className="max-w-xl mx-auto mb-12">
-                <h3 className="text-xl font-semibold text-white mb-4">
+                <h3 className="text-xl font-semibold text-heading mb-4">
                     {countdown.isTimeUp ? 'Chúc Mừng Năm Mới!' : 'Đếm ngược đến Tết Bính Ngọ 2026'}
                 </h3>
                 <div className="grid grid-cols-4 gap-2 sm:gap-4 p-4 bg-dark-card/50 rounded-xl border border-dark-border backdrop-blur-sm">
@@ -252,10 +252,22 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNaviga
             }
             onClick={onNavigateToVideoAnalyzer}
         />
+        <ToolCard 
+            title="Chuyển đổi Video sang JPG"
+            description="Trích xuất khung hình từ video sang JPG nhanh chóng. Tùy chọn theo thời gian, số lượng ảnh hoặc frame."
+            icon={
+                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14" />
+                </svg>
+            }
+            onClick={onNavigateToVideoToJpg}
+            isNew={true}
+        />
       </div>
 
        <section className="mt-24 max-w-4xl mx-auto">
-        <h2 className="animated-gradient-text text-3xl md:text-4xl font-bold text-center mb-10 text-white bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-brand-light-purple">
+        <h2 className="animated-gradient-text text-3xl md:text-4xl font-bold text-center mb-10 text-heading bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-brand-light-purple">
           Giới thiệu Tsoft – Tool tạo video hàng loạt VEO3 Ultra mới nhất 2025
         </h2>
         <div className="aspect-video w-full bg-black rounded-lg overflow-hidden shadow-2xl border border-dark-border">
@@ -272,7 +284,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNaviga
       </section>
 
       <section className="mt-24 max-w-5xl mx-auto">
-            <h2 className="animated-gradient-text text-3xl md:text-4xl font-bold text-center mb-10 text-white bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-brand-light-purple">
+            <h2 className="animated-gradient-text text-3xl md:text-4xl font-bold text-center mb-10 text-heading bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-brand-light-purple">
               Tham Gia Cộng Đồng
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

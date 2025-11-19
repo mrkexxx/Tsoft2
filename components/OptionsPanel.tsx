@@ -102,7 +102,7 @@ const OptionsPanel: React.FC<OptionsPanelProps> = ({
 
   return (
     <div className="space-y-6 bg-dark-card p-6 rounded-lg border border-dark-border">
-      <h3 className="text-xl font-bold text-center text-white">Tùy chọn</h3>
+      <h3 className="text-xl font-bold text-center text-heading">Tùy chọn</h3>
       
       <div className="space-y-2">
         <label htmlFor="duration-minutes" className="block text-md font-medium text-dark-text-secondary">

@@ -208,7 +208,7 @@ const ScriptRewriter: React.FC<ScriptRewriterProps> = ({ onGoHome }) => {
 
             {!result ? (
                 <div className="bg-dark-card p-6 rounded-lg border border-dark-border space-y-6">
-                    <h2 className="text-2xl font-bold text-white">Bước 1: Nhập kịch bản & Chọn tùy chọn</h2>
+                    <h2 className="text-2xl font-bold text-heading">Bước 1: Nhập kịch bản & Chọn tùy chọn</h2>
                     <div>
                         <div className="flex justify-between items-center mb-2">
                              <label htmlFor="script-input" className="block text-md font-medium text-dark-text-secondary">Kịch bản gốc</label>
@@ -280,7 +280,7 @@ const ScriptRewriter: React.FC<ScriptRewriterProps> = ({ onGoHome }) => {
                 <div className="space-y-8 animate-fade-in">
                     {/* Analysis Section */}
                     <div className="bg-dark-card p-6 rounded-lg border border-dark-border">
-                        <h2 className="text-2xl font-bold text-white mb-4">Báo cáo phân tích</h2>
+                        <h2 className="text-2xl font-bold text-heading mb-4">Báo cáo phân tích</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                             <div>
                                 <h3 className="text-lg font-semibold text-dark-text-secondary mb-3 text-center">Kịch bản gốc</h3>
@@ -309,7 +309,7 @@ const ScriptRewriter: React.FC<ScriptRewriterProps> = ({ onGoHome }) => {
                     {/* Character and Story Structure Section */}
                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <div className="bg-dark-card p-6 rounded-lg border border-dark-border">
-                            <h2 className="text-2xl font-bold text-white mb-4">Nhân vật</h2>
+                            <h2 className="text-2xl font-bold text-heading mb-4">Nhân vật</h2>
                             <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
                                 {result.characters.map((char, index) => (
                                     <div key={index} className="bg-gray-900/50 p-3 rounded-md">
@@ -320,7 +320,7 @@ const ScriptRewriter: React.FC<ScriptRewriterProps> = ({ onGoHome }) => {
                             </div>
                         </div>
                          <div className="bg-dark-card p-6 rounded-lg border border-dark-border">
-                            <h2 className="text-2xl font-bold text-white mb-4">Cấu trúc 3 hồi</h2>
+                            <h2 className="text-2xl font-bold text-heading mb-4">Cấu trúc 3 hồi</h2>
                              <div className="space-y-2 text-sm max-h-60 overflow-y-auto pr-2">
                                 <p><strong className="text-dark-text">Hồi 1 (Mở đầu):</strong> <span className="text-dark-text-secondary">{result.threeActStructure.act1_setup}</span></p>
                                 <p><strong className="text-dark-text">Hồi 2 (Cao trào):</strong> <span className="text-dark-text-secondary">{result.threeActStructure.act2_confrontation}</span></p>
@@ -331,7 +331,7 @@ const ScriptRewriter: React.FC<ScriptRewriterProps> = ({ onGoHome }) => {
                     
                     {/* Rewritten Script Section */}
                     <div className="bg-dark-card p-6 rounded-lg border border-dark-border">
-                        <h2 className="text-2xl font-bold text-white mb-4">Kịch bản đã viết lại (Giọng điệu: {tone.split(' (')[0]})</h2>
+                        <h2 className="text-2xl font-bold text-heading mb-4">Kịch bản đã viết lại (Giọng điệu: {tone.split(' (')[0]})</h2>
                         <textarea
                             readOnly
                             value={result.rewrittenScript}

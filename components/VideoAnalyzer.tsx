@@ -122,7 +122,7 @@ const VideoAnalyzer: React.FC<VideoAnalyzerProps> = ({ onGoHome }) => {
             <div className="space-y-8">
                 {/* Step 1: Upload */}
                 <div className="bg-dark-card p-6 rounded-lg border border-dark-border space-y-6">
-                    <h2 className="text-2xl font-bold text-white">Bước 1: Tải lên và Phân tích Video</h2>
+                    <h2 className="text-2xl font-bold text-heading">Bước 1: Tải lên và Phân tích Video</h2>
                     
                     <input
                         type="file"
@@ -171,7 +171,7 @@ const VideoAnalyzer: React.FC<VideoAnalyzerProps> = ({ onGoHome }) => {
                 {/* Step 2: Analysis Result */}
                 {analysisResult && (
                     <div className="bg-dark-card p-6 rounded-lg border border-dark-border space-y-6 animate-fade-in">
-                        <h2 className="text-2xl font-bold text-white">Bước 2: Kết quả phân tích</h2>
+                        <h2 className="text-2xl font-bold text-heading">Bước 2: Kết quả phân tích</h2>
                         <div>
                             <h3 className="text-xl font-semibold text-brand-light-purple mb-2">Tóm tắt chung</h3>
                             <p className="p-3 bg-gray-900/50 rounded-md text-dark-text">{analysisResult.summary}</p>
@@ -215,7 +215,7 @@ const VideoAnalyzer: React.FC<VideoAnalyzerProps> = ({ onGoHome }) => {
                 {/* Step 3: Veo Prompts */}
                 {veoPrompts && (
                     <div className="bg-dark-card p-6 rounded-lg border border-dark-border space-y-6 animate-fade-in">
-                        <h2 className="text-2xl font-bold text-white">Bước 3: Prompt Veo3 (Tiếng Anh)</h2>
+                        <h2 className="text-2xl font-bold text-heading">Bước 3: Prompt Veo3 (Tiếng Anh)</h2>
                         <div className="space-y-2 max-h-80 overflow-y-auto pr-2">
                             {veoPrompts.map((prompt, index) => (
                                 <p key={index} className="p-3 bg-gray-900/50 rounded-md text-dark-text font-mono text-sm">{prompt}</p>

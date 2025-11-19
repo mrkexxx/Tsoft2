@@ -11,19 +11,31 @@
         theme: {
           extend: {
             colors: {
-              'brand-purple': '#6d28d9',
-              'brand-light-purple': '#8b5cf6',
-              'dark-bg': '#111827',
-              'dark-card': '#1f2937',
-              'dark-border': '#374151',
-              'dark-text': '#d1d5db',
-              'dark-text-secondary': '#9ca3af',
+              'brand-purple': 'var(--brand-purple)',
+              'brand-light-purple': 'var(--brand-light-purple)',
+              'dark-bg': 'var(--dark-bg)',
+              'dark-card': 'var(--dark-card)',
+              'dark-border': 'var(--dark-border)',
+              'dark-text': 'var(--dark-text)',
+              'dark-text-secondary': 'var(--dark-text-secondary)',
+              'heading': 'var(--heading-text)',
             }
           }
         }
       }
     </script>
     <style>
+      :root {
+        --brand-purple: #6d28d9;
+        --brand-light-purple: #8b5cf6;
+        --dark-bg: #111827;
+        --dark-card: #1f2937;
+        --dark-border: #374151;
+        --dark-text: #d1d5db;
+        --dark-text-secondary: #9ca3af;
+        --heading-text: #ffffff;
+      }
+
       @keyframes gradient-animation {
         0% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
@@ -136,12 +148,13 @@
     "react/": "https://aistudiocdn.com/react@^19.1.1/",
     "react": "https://aistudiocdn.com/react@^19.1.1",
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.17.0"
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.17.0",
+    "jszip": "https://aistudiocdn.com/jszip@^3.10.1"
   }
 }
 </script>
 </head>
-  <body class="bg-dark-bg text-dark-text">
+  <body class="bg-dark-bg text-dark-text transition-colors duration-500">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
   </body>

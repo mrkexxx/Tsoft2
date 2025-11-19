@@ -9,11 +9,13 @@ import ThumbnailGenerator from './components/ThumbnailGenerator';
 import YouTubeSeoGenerator from './components/YouTubeSeoGenerator';
 import ApiKeySetup from './components/ApiKeySetup';
 import ImageToMotionGenerator from './components/ImageToMotionGenerator';
+import VideoToJpgConverter from './components/VideoToJpgConverter';
 import { Article } from './types';
 import Chatbot from './components/Chatbot';
 import VideoAnalyzer from './components/VideoAnalyzer';
+import AdsPopup from './components/AdsPopup';
 
-type Page = 'home' | 'scriptToImage' | 'veoAnimation' | 'history' | 'articleDetail' | 'thumbnailGenerator' | 'youtubeSeo' | 'apiKeySetup' | 'videoAnalyzer' | 'imageToMotion';
+type Page = 'home' | 'scriptToImage' | 'veoAnimation' | 'history' | 'articleDetail' | 'thumbnailGenerator' | 'youtubeSeo' | 'apiKeySetup' | 'videoAnalyzer' | 'imageToMotion' | 'videoToJpg';
 
 const App: React.FC = () => {
   const [hasApiKey, setHasApiKey] = useState<boolean>(false);
@@ -67,6 +69,11 @@ const App: React.FC = () => {
     setSelectedArticle(null);
   };
 
+  const navigateToVideoToJpg = () => {
+    setCurrentPage('videoToJpg');
+    setSelectedArticle(null);
+  };
+
   const navigateHome = () => {
     setCurrentPage('home');
     setSelectedArticle(null);
@@ -101,6 +108,7 @@ const App: React.FC = () => {
                     onNavigateToYouTubeSeo={navigateToYouTubeSeo} 
                     onNavigateToVideoAnalyzer={navigateToVideoAnalyzer}
                     onNavigateToImageToMotion={navigateToImageToMotion}
+                    onNavigateToVideoToJpg={navigateToVideoToJpg}
                 />
             );
         case 'scriptToImage':
@@ -115,6 +123,8 @@ const App: React.FC = () => {
             return <VideoAnalyzer onGoHome={navigateHome} />;
         case 'imageToMotion':
             return <ImageToMotionGenerator onGoHome={navigateHome} />;
+        case 'videoToJpg':
+            return <VideoToJpgConverter onGoHome={navigateHome} />;
         case 'history':
             return <HistoryPage onGoHome={navigateHome} onNavigateToArticle={navigateToArticleDetail} />;
         case 'articleDetail':
@@ -134,14 +144,20 @@ const App: React.FC = () => {
                     onNavigateToYouTubeSeo={navigateToYouTubeSeo} 
                     onNavigateToVideoAnalyzer={navigateToVideoAnalyzer}
                     onNavigateToImageToMotion={navigateToImageToMotion}
+                    onNavigateToVideoToJpg={navigateToVideoToJpg}
                 />
             );
     }
   }
 
   return (
-    <div className="min-h-screen bg-dark-bg text-dark-text">
-      <Header onGoHome={navigateHome} onNavigateToHistory={navigateToHistory} onNavigateToApiKeySetup={navigateToApiKeySetup} />
+    <div className="min-h-screen transition-colors duration-500">
+      <AdsPopup />
+      <Header 
+        onGoHome={navigateHome} 
+        onNavigateToHistory={navigateToHistory} 
+        onNavigateToApiKeySetup={navigateToApiKeySetup}
+      />
       <main className="container mx-auto p-4 md:p-8">
         {renderPage()}
       </main>

@@ -110,7 +110,7 @@ const ThumbnailGenerator: React.FC<ThumbnailGeneratorProps> = ({ onGoHome }) => 
         <div className="space-y-8">
             {/* --- BƯỚC 1: INPUT --- */}
             <div className="bg-dark-card p-6 rounded-lg border border-dark-border space-y-6">
-                <h2 className="text-2xl font-bold text-white">Bước 1: Tải ảnh mẫu & Tạo prompt gốc</h2>
+                <h2 className="text-2xl font-bold text-heading">Bước 1: Tải ảnh mẫu & Tạo prompt gốc</h2>
                 <div 
                     className="border-2 border-dashed border-dark-border rounded-lg p-8 text-center cursor-pointer hover:border-brand-purple transition-colors"
                     onClick={() => fileInputRef.current?.click()}
@@ -159,7 +159,7 @@ const ThumbnailGenerator: React.FC<ThumbnailGeneratorProps> = ({ onGoHome }) => 
 
             {/* --- BƯỚC 2: CHỈNH SỬA --- */}
             <div className="bg-dark-card p-6 rounded-lg border border-dark-border space-y-6">
-                <h2 className="text-2xl font-bold text-white">Bước 2: Chỉnh sửa Prompt</h2>
+                <h2 className="text-2xl font-bold text-heading">Bước 2: Chỉnh sửa Prompt</h2>
                 
                 <div>
                     <label htmlFor="generated-prompt" className="block text-md font-medium text-dark-text-secondary mb-2">Prompt (có thể chỉnh sửa)</label>

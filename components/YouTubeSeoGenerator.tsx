@@ -149,7 +149,7 @@ const YouTubeSeoGenerator: React.FC<YouTubeSeoGeneratorProps> = ({ onGoHome }) =
             
             {seoResult && (
                 <div className="mt-8 bg-dark-card p-6 rounded-lg border border-dark-border space-y-6 animate-fade-in">
-                    <h2 className="text-2xl font-bold text-white text-center">Kết quả SEO</h2>
+                    <h2 className="text-2xl font-bold text-heading text-center">Kết quả SEO</h2>
 
                     {/* Tiêu đề */}
                     <div className="space-y-3">

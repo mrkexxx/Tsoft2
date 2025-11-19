@@ -24,11 +24,11 @@ const UploadIcon: React.FC = () => (
 
 const CopyIcon: React.FC<{ isCopied: boolean }> = ({ isCopied }) => (
     isCopied ? (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>
     ) : (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
         </svg>
     )
@@ -62,10 +62,16 @@ const ImageToMotionGenerator: React.FC<ImageToMotionGeneratorProps> = ({ onGoHom
     if (pendingImages.length === 0) return;
 
     setIsProcessing(true);
+    let processedCount = 0;
 
     // Process sequentially to avoid rate limits, or use Promise.all with concurrency limit if needed.
     // For simplicity and better UX feedback, we'll process one by one.
     for (const image of pendingImages) {
+      // Logic: Pause 10 seconds after every 5 images
+      if (processedCount > 0 && processedCount % 5 === 0) {
+        await new Promise(resolve => setTimeout(resolve, 10000)); // 10000ms = 10s
+      }
+
       // Update status to processing
       setImages(prev => prev.map(img => img.id === image.id ? { ...img, status: 'processing' } : img));
 
@@ -75,6 +81,8 @@ const ImageToMotionGenerator: React.FC<ImageToMotionGeneratorProps> = ({ onGoHom
       } catch (error) {
         setImages(prev => prev.map(img => img.id === image.id ? { ...img, status: 'error', error: 'Lỗi khi tạo prompt' } : img));
       }
+      
+      processedCount++;
     }
 
     setIsProcessing(false);
@@ -126,14 +134,14 @@ const ImageToMotionGenerator: React.FC<ImageToMotionGeneratorProps> = ({ onGoHom
   }
 
   return (
-    <div className="animate-fade-in max-w-6xl mx-auto">
+    <div className="animate-fade-in max-w-7xl mx-auto">
       <PageHeader title="Tạo Prompt Chuyển Động Hàng Loạt" onBack={onGoHome} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column: Upload & Controls */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-dark-card p-6 rounded-lg border border-dark-border">
-            <h2 className="text-xl font-bold text-white mb-4">1. Tải ảnh lên</h2>
+          <div className="bg-dark-card p-6 rounded-lg border border-dark-border sticky top-4">
+            <h2 className="text-xl font-bold text-heading mb-4">1. Tải ảnh lên</h2>
             <div 
                 className="border-2 border-dashed border-dark-border rounded-lg p-8 text-center cursor-pointer hover:border-brand-purple transition-colors bg-gray-900/30"
                 onClick={() => fileInputRef.current?.click()}
@@ -189,87 +197,81 @@ const ImageToMotionGenerator: React.FC<ImageToMotionGeneratorProps> = ({ onGoHom
                 )}
             </div>
           </div>
-          
-           <div className="bg-dark-card p-4 rounded-lg border border-dark-border">
-               <h3 className="font-bold text-white mb-2">Mẹo sử dụng</h3>
-               <ul className="text-sm text-dark-text-secondary list-disc list-inside space-y-1">
-                   <li>Tải lên các ảnh tĩnh bạn muốn làm video.</li>
-                   <li>Công cụ sẽ phân tích nội dung và đề xuất chuyển động (camera, chủ thể) phù hợp.</li>
-                   <li>Kết quả là prompt tiếng Anh, tối ưu cho Gen-2, Pika, Veo.</li>
-               </ul>
-           </div>
         </div>
 
         {/* Right Column: Results List */}
         <div className="lg:col-span-2">
-            <h2 className="text-xl font-bold text-white mb-4 flex justify-between items-center">
+            <h2 className="text-xl font-bold text-heading mb-4 flex justify-between items-center">
                 <span>Danh sách ảnh ({images.length})</span>
                 <span className="text-sm font-normal text-dark-text-secondary">
                     {images.filter(i => i.status === 'completed').length} / {images.length} hoàn thành
                 </span>
             </h2>
             
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {images.length === 0 && (
-                    <div className="text-center py-20 border-2 border-dashed border-dark-border rounded-lg bg-dark-card">
+                    <div className="col-span-full text-center py-20 border-2 border-dashed border-dark-border rounded-lg bg-dark-card">
                         <p className="text-dark-text-secondary">Chưa có ảnh nào được chọn.</p>
                     </div>
                 )}
 
                 {images.map((img) => (
-                    <div key={img.id} className="bg-dark-card p-4 rounded-lg border border-dark-border flex flex-col sm:flex-row gap-4 animate-fade-in">
+                    <div key={img.id} className="bg-dark-card p-3 rounded-lg border border-dark-border flex flex-col gap-3 animate-fade-in h-full shadow-lg hover:border-brand-purple/50 transition-colors">
                         {/* Thumbnail */}
-                        <div className="relative w-full sm:w-32 h-32 flex-shrink-0 bg-black rounded-md overflow-hidden group">
+                        <div className="relative w-full aspect-video flex-shrink-0 bg-black rounded-md overflow-hidden group">
                             <img src={img.previewUrl} alt={img.file.name} className="w-full h-full object-cover" />
                             {!isProcessing && (
                                 <button 
                                     onClick={() => handleRemoveImage(img.id)}
-                                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-md z-10"
                                     title="Xóa ảnh"
                                 >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                                     </svg>
                                 </button>
                             )}
+                            
+                            <div className="absolute bottom-1 right-1 z-10">
+                                 <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-sm shadow-sm ${
+                                    img.status === 'completed' ? 'bg-green-600 text-white' :
+                                    img.status === 'processing' ? 'bg-blue-600 text-white' :
+                                    img.status === 'error' ? 'bg-red-600 text-white' :
+                                    'bg-gray-600 text-white'
+                                }`}>
+                                    {img.status === 'completed' ? 'OK' :
+                                     img.status === 'processing' ? '...' :
+                                     img.status === 'error' ? 'Lỗi' : 'Chờ'}
+                                </span>
+                            </div>
                         </div>
 
                         {/* Content */}
-                        <div className="flex-1 min-w-0">
-                            <div className="flex justify-between items-start mb-2">
-                                <h3 className="font-semibold text-white truncate text-sm" title={img.file.name}>{img.file.name}</h3>
-                                <span className={`text-xs font-bold px-2 py-1 rounded-full ${
-                                    img.status === 'completed' ? 'bg-green-900 text-green-200' :
-                                    img.status === 'processing' ? 'bg-blue-900 text-blue-200' :
-                                    img.status === 'error' ? 'bg-red-900 text-red-200' :
-                                    'bg-gray-700 text-gray-300'
-                                }`}>
-                                    {img.status === 'completed' ? 'Hoàn thành' :
-                                     img.status === 'processing' ? 'Đang xử lý...' :
-                                     img.status === 'error' ? 'Lỗi' : 'Chờ xử lý'}
-                                </span>
-                            </div>
+                        <div className="flex-1 min-w-0 flex flex-col">
+                            <h3 className="font-semibold text-heading truncate text-xs w-full mb-2" title={img.file.name}>
+                                {img.file.name}
+                            </h3>
 
                             {img.status === 'processing' && (
-                                <div className="w-full bg-gray-700 rounded-full h-2.5 mt-4">
-                                    <div className="bg-blue-600 h-2.5 rounded-full animate-pulse" style={{ width: '100%' }}></div>
+                                <div className="w-full bg-gray-700 rounded-full h-1.5 mb-auto">
+                                    <div className="bg-blue-600 h-1.5 rounded-full animate-pulse" style={{ width: '100%' }}></div>
                                 </div>
                             )}
 
                             {img.status === 'error' && (
-                                <p className="text-red-400 text-sm mt-2">{img.error}</p>
+                                <p className="text-red-400 text-xs mb-auto">{img.error}</p>
                             )}
 
                             {img.status === 'completed' && img.prompt && (
-                                <div className="relative mt-2">
+                                <div className="relative flex-grow mt-auto">
                                     <textarea
                                         readOnly
                                         value={img.prompt}
-                                        className="w-full h-24 p-2 pr-10 bg-gray-900/50 border border-dark-border rounded text-sm text-cyan-300 font-mono resize-none focus:outline-none"
+                                        className="w-full h-24 p-2 pr-8 bg-gray-900/50 border border-dark-border rounded text-xs text-cyan-300 font-mono resize-none focus:outline-none scrollbar-thin"
                                     />
                                     <button
                                         onClick={() => handleCopy(img.prompt!, img.id)}
-                                        className="absolute top-2 right-2 p-1.5 bg-gray-700 hover:bg-brand-purple rounded transition-colors"
+                                        className="absolute top-1 right-1 p-1 bg-gray-700 hover:bg-brand-purple rounded transition-colors"
                                         title="Sao chép prompt"
                                     >
                                         <CopyIcon isCopied={copiedId === img.id} />
