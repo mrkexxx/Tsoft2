@@ -85,3 +85,16 @@ export interface SunoPrompt {
     explanation: string;
   };
 }
+
+export interface ThumbnailIdea {
+    text: string;
+    colors: string;
+    font: string;
+    visual: string;
+}
+
+export interface ThumbnailAnalysisResult {
+    ideas: ThumbnailIdea[];
+    bestChoiceIndex: number; // 0-3
+    reasoning: string;
+}

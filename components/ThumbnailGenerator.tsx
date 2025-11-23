@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { generateThumbnailPromptFromImage, refineThumbnailPrompt } from '../services/geminiService';
+import { generateThumbnailPromptFromImage, refineThumbnailPrompt, generateThumbnailImage } from '../services/geminiService';
 import Loader from './Loader';
 import PageHeader from './PageHeader';
 
@@ -24,6 +24,7 @@ const ThumbnailGenerator: React.FC<ThumbnailGeneratorProps> = ({ onGoHome }) => 
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isCopied, setIsCopied] = useState(false);
+  const [generatedThumbnail, setGeneratedThumbnail] = useState<string | null>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -37,6 +38,7 @@ const ThumbnailGenerator: React.FC<ThumbnailGeneratorProps> = ({ onGoHome }) => 
         setSourceImage(reader.result as string);
         setSourceImageType(file.type);
         setGeneratedPrompt('');
+        setGeneratedThumbnail(null);
         setError(null);
       };
       reader.readAsDataURL(file);
@@ -85,12 +87,41 @@ const ThumbnailGenerator: React.FC<ThumbnailGeneratorProps> = ({ onGoHome }) => 
     }
   };
 
+  const handleGenerateImage = async () => {
+    if (!generatedPrompt) {
+        setError('Vui lòng có prompt trước khi tạo ảnh.');
+        return;
+    }
+    setIsLoading(true);
+    setLoadingMessage('Đang vẽ Thumbnail (Banana 3.0)... Vui lòng đợi...');
+    setError(null);
+    try {
+        const imageUrl = await generateThumbnailImage(generatedPrompt);
+        setGeneratedThumbnail(imageUrl);
+    } catch (err) {
+        setError(err instanceof Error ? err.message : 'Đã xảy ra lỗi không xác định khi tạo ảnh.');
+    } finally {
+        setIsLoading(false);
+    }
+  };
+
+
   const handleCopyPrompt = () => {
     if (!generatedPrompt) return;
     navigator.clipboard.writeText(generatedPrompt).then(() => {
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
     });
+  };
+
+  const handleDownloadImage = () => {
+    if (!generatedThumbnail) return;
+    const link = document.createElement('a');
+    link.href = generatedThumbnail;
+    link.download = `thumbnail_${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -206,6 +237,55 @@ const ThumbnailGenerator: React.FC<ThumbnailGeneratorProps> = ({ onGoHome }) => 
                     Chỉnh sửa bằng AI
                 </button>
             </div>
+
+            {/* --- BƯỚC 3: TẠO HÌNH ẢNH (BANANA 3.0) --- */}
+            {generatedPrompt && (
+                <div className="bg-dark-card p-6 rounded-lg border border-dark-border space-y-6 animate-fade-in border-t-4 border-t-brand-purple">
+                    <div className="text-center">
+                        <h2 className="text-2xl font-bold text-heading mb-2">Bước 3: Tạo hình ảnh Thumbnail (Banana 3.0)</h2>
+                        <p className="text-dark-text-secondary text-sm">Sử dụng model AI mới nhất để tạo hình ảnh chất lượng cao từ prompt trên.</p>
+                    </div>
+
+                    {generatedThumbnail ? (
+                        <div className="space-y-4">
+                            <div className="relative rounded-lg overflow-hidden shadow-2xl border border-dark-border">
+                                <img 
+                                    src={generatedThumbnail} 
+                                    alt="Thumbnail được tạo bởi AI" 
+                                    className="w-full h-auto object-cover"
+                                />
+                            </div>
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <button
+                                    onClick={handleDownloadImage}
+                                    className="flex-1 py-3 px-4 font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-all flex items-center justify-center gap-2"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                    Tải về (PNG)
+                                </button>
+                                <button
+                                    onClick={handleGenerateImage}
+                                    className="flex-1 py-3 px-4 font-bold text-white bg-gray-600 rounded-lg hover:bg-gray-700 transition-all"
+                                >
+                                    Tạo lại phiên bản khác
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-center py-6">
+                             <button
+                                onClick={handleGenerateImage}
+                                disabled={isLoading}
+                                className="w-full sm:w-auto py-4 px-8 font-bold text-xl text-white bg-gradient-to-r from-pink-600 to-purple-600 rounded-full hover:from-pink-500 hover:to-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg transform hover:scale-105"
+                            >
+                                {isLoading ? 'Đang vẽ...' : '✨ Tạo Thumbnail Ngay ✨'}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     </div>
   );

@@ -10,12 +10,13 @@ import YouTubeSeoGenerator from './components/YouTubeSeoGenerator';
 import ApiKeySetup from './components/ApiKeySetup';
 import ImageToMotionGenerator from './components/ImageToMotionGenerator';
 import VideoToJpgConverter from './components/VideoToJpgConverter';
+import ThumbnailIdeasGenerator from './components/ThumbnailIdeasGenerator';
 import { Article } from './types';
 import Chatbot from './components/Chatbot';
 import VideoAnalyzer from './components/VideoAnalyzer';
 import AdsPopup from './components/AdsPopup';
 
-type Page = 'home' | 'scriptToImage' | 'veoAnimation' | 'history' | 'articleDetail' | 'thumbnailGenerator' | 'youtubeSeo' | 'apiKeySetup' | 'videoAnalyzer' | 'imageToMotion' | 'videoToJpg';
+type Page = 'home' | 'scriptToImage' | 'veoAnimation' | 'history' | 'articleDetail' | 'thumbnailGenerator' | 'youtubeSeo' | 'apiKeySetup' | 'videoAnalyzer' | 'imageToMotion' | 'videoToJpg' | 'thumbnailIdeas';
 
 const App: React.FC = () => {
   const [hasApiKey, setHasApiKey] = useState<boolean>(false);
@@ -74,6 +75,11 @@ const App: React.FC = () => {
     setSelectedArticle(null);
   };
 
+  const navigateToThumbnailIdeas = () => {
+    setCurrentPage('thumbnailIdeas');
+    setSelectedArticle(null);
+  };
+
   const navigateHome = () => {
     setCurrentPage('home');
     setSelectedArticle(null);
@@ -109,6 +115,7 @@ const App: React.FC = () => {
                     onNavigateToVideoAnalyzer={navigateToVideoAnalyzer}
                     onNavigateToImageToMotion={navigateToImageToMotion}
                     onNavigateToVideoToJpg={navigateToVideoToJpg}
+                    onNavigateToThumbnailIdeas={navigateToThumbnailIdeas}
                 />
             );
         case 'scriptToImage':
@@ -125,6 +132,8 @@ const App: React.FC = () => {
             return <ImageToMotionGenerator onGoHome={navigateHome} />;
         case 'videoToJpg':
             return <VideoToJpgConverter onGoHome={navigateHome} />;
+        case 'thumbnailIdeas':
+            return <ThumbnailIdeasGenerator onGoHome={navigateHome} />;
         case 'history':
             return <HistoryPage onGoHome={navigateHome} onNavigateToArticle={navigateToArticleDetail} />;
         case 'articleDetail':
@@ -145,6 +154,7 @@ const App: React.FC = () => {
                     onNavigateToVideoAnalyzer={navigateToVideoAnalyzer}
                     onNavigateToImageToMotion={navigateToImageToMotion}
                     onNavigateToVideoToJpg={navigateToVideoToJpg}
+                    onNavigateToThumbnailIdeas={navigateToThumbnailIdeas}
                 />
             );
     }

@@ -37,13 +37,13 @@ const AdsPopup: React.FC = () => {
         }
     }, [isOpen]);
 
-    // Logic lặp lại mỗi 6 phút (360000ms)
+    // Logic lặp lại mỗi 15 phút (15 * 60 * 1000)
     useEffect(() => {
         const interval = setInterval(() => {
             // Chọn lời dẫn tiếp theo
             setIntroIndex(prev => (prev + 1) % intros.length);
             setIsOpen(true);
-        }, 6 * 60 * 1000); 
+        }, 15 * 60 * 1000); 
 
         return () => clearInterval(interval);
     }, []);
@@ -53,6 +53,20 @@ const AdsPopup: React.FC = () => {
     return (
         <div className="fixed inset-0 bg-black/90 z-[9999] flex items-center justify-center p-4 animate-fade-in backdrop-blur-sm">
             <div className="bg-dark-card border-2 border-brand-purple rounded-2xl shadow-[0_0_30px_rgba(109,40,217,0.6)] max-w-lg w-full p-8 relative text-center overflow-hidden">
+                
+                {/* Nút tắt (X) - Chỉ hiện khi canClose = true */}
+                {canClose && (
+                    <button 
+                        onClick={() => setIsOpen(false)}
+                        className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-full transition-all z-20"
+                        title="Đóng thông báo"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                )}
+
                 {/* Trang trí nền */}
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-pulse"></div>
                 

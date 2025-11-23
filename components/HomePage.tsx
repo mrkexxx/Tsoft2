@@ -8,6 +8,7 @@ interface HomePageProps {
   onNavigateToVideoAnalyzer: () => void;
   onNavigateToImageToMotion: () => void;
   onNavigateToVideoToJpg: () => void;
+  onNavigateToThumbnailIdeas: () => void;
 }
 
 // FIX: Replaced JSX.Element with React.ReactElement to resolve "Cannot find namespace 'JSX'" error.
@@ -64,7 +65,7 @@ const CommunityLink: React.FC<{ title: string; description: string; href: string
 );
 
 
-const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNavigateToVeoAnimation, onNavigateToThumbnailGenerator, onNavigateToYouTubeSeo, onNavigateToVideoAnalyzer, onNavigateToImageToMotion, onNavigateToVideoToJpg }) => {
+const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNavigateToVeoAnimation, onNavigateToThumbnailGenerator, onNavigateToYouTubeSeo, onNavigateToVideoAnalyzer, onNavigateToImageToMotion, onNavigateToVideoToJpg, onNavigateToThumbnailIdeas }) => {
     const defaultCommunityIcon = (
         <div className="bg-brand-purple/20 p-3 rounded-lg">
              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-brand-light-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -230,6 +231,18 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNaviga
                 </svg>
             }
             onClick={onNavigateToThumbnailGenerator}
+        />
+        <ToolCard 
+            title="Gợi ý Ý tưởng Thumbnail"
+            description="Nhập tiêu đề và nội dung video, AI sẽ phân tích và đề xuất 4 ý tưởng thiết kế thumbnail tối ưu CTR nhất."
+            icon={
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    <circle cx="12" cy="12" r="3" />
+                </svg>
+            }
+            onClick={onNavigateToThumbnailIdeas}
+            isNew={true}
         />
         <ToolCard 
             title="Viết tiêu đề chuẩn SEO Youtube"

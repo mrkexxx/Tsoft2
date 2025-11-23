@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { GeneratedPrompt, YouTubeSeoResult, VideoAnalysisResult, ScriptAnalysisResult, SunoPrompt } from '../types';
+import { GeneratedPrompt, YouTubeSeoResult, VideoAnalysisResult, ScriptAnalysisResult, SunoPrompt, ThumbnailAnalysisResult, ThumbnailIdea } from '../types';
 
 const getAiClient = () => {
     const apiKey = localStorage.getItem('gemini-api-key');
@@ -7,6 +7,34 @@ const getAiClient = () => {
         throw new Error("API Key không được tìm thấy. Vui lòng thiết lập API Key để sử dụng công cụ.");
     }
     return new GoogleGenAI({ apiKey });
+};
+
+// Helper function for robust JSON parsing
+const parseJSONFromText = (text: string): any => {
+    try {
+        // 1. Try parsing directly
+        return JSON.parse(text);
+    } catch (e) {
+        // 2. Try extracting from markdown code blocks
+        const jsonBlockMatch = text.match(/```json\n([\s\S]*?)\n```/) || text.match(/```\n([\s\S]*?)\n```/);
+        if (jsonBlockMatch) {
+            try {
+                return JSON.parse(jsonBlockMatch[1]);
+            } catch (e2) { /* continue */ }
+        }
+        
+        // 3. Try finding the outermost braces
+        const firstBrace = text.indexOf('{');
+        const lastBrace = text.lastIndexOf('}');
+        if (firstBrace !== -1 && lastBrace !== -1) {
+            const potentialJson = text.substring(firstBrace, lastBrace + 1);
+            try {
+                return JSON.parse(potentialJson);
+            } catch (e3) { /* continue */ }
+        }
+        
+        throw new Error("AI trả về dữ liệu không đúng định dạng JSON. Vui lòng thử lại.");
+    }
 };
 
 const getStyleInstruction = (style: string): string => {
@@ -259,6 +287,44 @@ export const refineThumbnailPrompt = async (
     }
     throw new Error("Đã xảy ra lỗi không xác định trong quá trình chỉnh sửa prompt.");
   }
+};
+
+export const generateThumbnailImage = async (prompt: string): Promise<string> => {
+    const ai = getAiClient();
+    try {
+        const enhancedPrompt = `(Best quality), (Masterpiece), 4k, 8k, ultra detailed, ${prompt}, no text, textless, no words`;
+        
+        const response = await ai.models.generateContent({
+            model: 'gemini-3-pro-image-preview', // Banana 3.0 model
+            contents: {
+                parts: [
+                    { text: enhancedPrompt }
+                ]
+            },
+            config: {
+                imageConfig: {
+                    aspectRatio: "16:9",
+                    imageSize: "1K"
+                }
+            }
+        });
+
+        for (const part of response.candidates?.[0]?.content?.parts || []) {
+            if (part.inlineData) {
+                const base64EncodeString: string = part.inlineData.data;
+                return `data:image/png;base64,${base64EncodeString}`;
+            }
+        }
+        
+        throw new Error("Không tìm thấy dữ liệu hình ảnh trong phản hồi của AI.");
+
+    } catch (error) {
+        console.error("Lỗi khi tạo ảnh thumbnail:", error);
+        if (error instanceof Error) {
+            throw new Error(`Không thể tạo ảnh: ${error.message}`);
+        }
+        throw new Error("Đã xảy ra lỗi không xác định trong quá trình tạo ảnh.");
+    }
 };
 
 export const generateMotionPromptForImage = async (imageFile: File): Promise<string> => {
@@ -881,7 +947,7 @@ export const analyzeAndRewriteScript = async (
                 -   Using a rich vocabulary of synonyms.
                 -   Adding your own commentary, analysis, metaphors, or evaluations to provide new value (this is crucial for Fair Use).
             c.  **Tone/Persona Application:** Rewrite the script by adopting the persona and tone of a **"${tone}"**. Embody the characteristics of this persona in your writing style, vocabulary, and sentence structure.
-            d.  **Target Duration (ABSOLUTELY CRITICAL):** ${targetCharCount ? `The user requires a script for a video of exactly ${targetDurationMinutes} minute(s). You MUST generate a rewritten script that is PRECISELY **${targetCharCount} characters** long. The allowed margin of error is extremely small: +/- 10 characters (i.e., between ${targetCharCount - 10} and ${targetCharCount + 10} characters). This is not a suggestion, it is a mandatory command. Meticulously expand on details or be extremely concise to hit this exact character count. Failure to meet this strict length requirement will make the output unusable.` : "Rewrite the script to a natural length based on the content."}
+            d.  **Target Duration (ABSOLUTELY CRITICAL):** ${targetCharCount ? `The user requires a script for a video of exactly ${targetDurationMinutes} minute(s). You MUST generate a rewritten script that is PRECISELY **${targetCharCount} characters** long. The allowed margin of error is extremely small: +/- 10 characters (i.e., between ${targetCharCount - 10} and ${targetCharCount + 10} characters). This is a non-negotiable requirement. Meticulously expand on details or be extremely concise to hit this exact character count. Failure to meet this strict length requirement will make the output unusable.` : "Rewrite the script to a natural length based on the content."}
             e.  **Optimization:** Automatically insert a compelling hook at the beginning and a call-to-action (CTA) at the end. The CTA should encourage viewers to like, subscribe, and comment.
 
         3.  **Policy Check (Step 3):**
@@ -1161,4 +1227,150 @@ export const generateSunoPrompts = async (
         }
         throw new Error("Đã xảy ra lỗi không xác định trong quá trình tạo prompts cho Suno.");
     }
+};
+
+export const generateThumbnailIdeas = async (
+    videoTitle: string,
+    videoContent: string,
+): Promise<ThumbnailAnalysisResult> => {
+    const ai = getAiClient();
+    try {
+        const systemInstruction = `You are a world-class YouTube Click-Through Rate (CTR) strategist and graphic designer. Your task is to analyze a video and generate high-converting thumbnail ideas.
+
+        **Workflow:**
+        1.  **Analyze Input:** Analyze the provided Video Title and Content Context. Detect the main language of the content.
+        2.  **Brainstorm:** Create 4 distinct, viral-worthy thumbnail concepts.
+        3.  **For EACH concept, provide:**
+            -   **Text (Hook):** The text overlay MUST be the EXACT video title provided by the user, DO NOT change it.
+            -   **Colors:** Suggest a color palette based on psychology.
+            -   **Font:** Suggest a font style.
+            -   **Visual:** A vivid description of the main image composition in VIETNAMESE.
+        4.  **Select the Winner:** Identify the best idea and explain why in VIETNAMESE.
+
+        **Output Format:**
+        Return ONLY a valid JSON object. Do not wrap it in markdown code blocks if possible, but if you must, use a standard json block.
+        Structure:
+        {
+          "ideas": [
+            { "text": "...", "colors": "...", "font": "...", "visual": "..." },
+            ...
+          ],
+          "bestChoiceIndex": 0,
+          "reasoning": "..."
+        }`;
+
+        let userContent = `**Video Title:** ${videoTitle}\n**Video Content/Context:**\n---\n${videoContent}\n---`;
+
+        // When using tools, responseMimeType/responseSchema are often restricted or flaky.
+        // We will ask for JSON text and parse it manually.
+        const requestConfig: any = {
+            systemInstruction,
+        };
+
+        requestConfig.responseMimeType = 'application/json';
+        requestConfig.responseSchema = {
+            type: Type.OBJECT,
+            properties: {
+                ideas: {
+                    type: Type.ARRAY,
+                    items: {
+                        type: Type.OBJECT,
+                        properties: {
+                            text: { type: Type.STRING, description: "Hook text in the appropriate language." },
+                            colors: { type: Type.STRING, description: "Suggested color palette." },
+                            font: { type: Type.STRING, description: "Suggested font style." },
+                            visual: { type: Type.STRING, description: "Visual composition description in Vietnamese." }
+                        },
+                        required: ['text', 'colors', 'font', 'visual']
+                    }
+                },
+                bestChoiceIndex: { type: Type.INTEGER, description: "Index of the best idea (0-3)." },
+                reasoning: { type: Type.STRING, description: "Explanation for why the best choice was selected, in Vietnamese." }
+            },
+            required: ['ideas', 'bestChoiceIndex', 'reasoning']
+        };
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: userContent,
+            config: requestConfig,
+        });
+
+        let jsonStr = response.text;
+        if (!jsonStr) throw new Error("No response from AI");
+
+        const parsedResponse: ThumbnailAnalysisResult = parseJSONFromText(jsonStr);
+        
+        // Enforce the video title as hook text
+        parsedResponse.ideas.forEach(idea => {
+            idea.text = videoTitle;
+        });
+
+        return parsedResponse;
+
+    } catch (error) {
+        console.error("Lỗi khi tạo ý tưởng thumbnail:", error);
+        if (error instanceof Error) {
+            throw new Error(`Đã xảy ra lỗi: ${error.message}`);
+        }
+        throw new Error("Đã xảy ra lỗi không xác định.");
+    }
+};
+
+export const generatePromptFromIdea = async (
+  idea: ThumbnailIdea,
+  videoInfo: string
+): Promise<string> => {
+  const ai = getAiClient();
+  try {
+    const systemInstruction = `You are an expert prompt engineer for image generation AI (like Midjourney, Imagen, DALL-E, Ideogram). Your task is to convert a thumbnail concept into a highly detailed, professional image generation prompt in ENGLISH.
+
+    **Input Data:**
+    1.  **Video Context:** Information about the video content.
+    2.  **Thumbnail Idea:**
+        -   **Visual:** Description of the scene composition.
+        -   **Text:** Text overlay (hook).
+        -   **Style:** Colors and Font.
+
+    **Goal:** Create a comprehensive prompt for generating the thumbnail.
+    
+    **CRITICAL INSTRUCTIONS:**
+    1.  **Text Inclusion (MANDATORY):** You MUST include the exact text overlay in the prompt. Most modern AI models (like Ideogram, DALL-E 3, Flux) can render text. Use the format: "text overlay that says '${idea.text}'".
+    2.  **Focus on Visuals:** Describe the subject, setting, lighting, camera angle, and composition based on the 'Visual' description provided.
+    3.  **Style Integration:** Incorporate the 'Colors', 'Font' style, and overall mood into the visual description.
+    4.  **High Quality:** Add keywords for high quality (e.g., 4k, hyperrealistic, cinematic lighting, trending on artstation, youtube thumbnail style).
+    5.  **Output:** Return ONLY the final English prompt string. No explanations.
+    
+    **Format Structure:**
+    "[Visual Description], [Style & Atmosphere], [Lighting & Colors], text overlay '${idea.text}', [Text Font/Style Description], 4k, high resolution."`;
+
+    const userContent = `
+    **Video Info:**
+    ${videoInfo}
+
+    **Thumbnail Idea:**
+    - Visual: ${idea.visual}
+    - Text Overlay: ${idea.text}
+    - Colors/Mood: ${idea.colors}
+    - Font Style: ${idea.font}
+
+    Please write the image generation prompt.`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: userContent,
+      config: {
+        systemInstruction,
+      },
+    });
+
+    return response.text.trim();
+
+  } catch (error) {
+    console.error("Lỗi khi tạo prompt từ ý tưởng:", error);
+    if (error instanceof Error) {
+        throw new Error(`Không thể tạo prompt: ${error.message}`);
+    }
+    throw new Error("Đã xảy ra lỗi không xác định.");
+  }
 };
