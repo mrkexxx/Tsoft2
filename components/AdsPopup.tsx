@@ -1,28 +1,108 @@
 import React, { useState, useEffect } from 'react';
 
+interface AdContent {
+    id: string;
+    themeColor: string; // Tailwind class for gradient
+    icon: React.ReactNode;
+    title: string;
+    message: React.ReactNode;
+    ctaText: string;
+    ctaLink: string;
+}
+
 const AdsPopup: React.FC = () => {
     const [isOpen, setIsOpen] = useState(true);
     const [canClose, setCanClose] = useState(false);
-    const [countdown, setCountdown] = useState(10);
-    const [introIndex, setIntroIndex] = useState(0);
+    const [countdown, setCountdown] = useState(3);
+    const [currentAdIndex, setCurrentAdIndex] = useState(0);
 
-    // Danh sách các lời dẫn hài hước, nhẹ nhàng
-    const intros = [
-        "Hế lô người anh em thiện lành! Dừng tay một chút nghe Admin tâm sự mỏng nè...",
-        "Đang hăng say sáng tạo à? Nghỉ ngơi 30 giây uống miếng nước và đọc tin nhắn gửi gắm từ Admin nhé!",
-        "Ting ting! Vũ trụ gửi tín hiệu: Đã đến lúc tối ưu hóa công việc của bạn rồi!",
-        "Thời gian là vàng! Admin ghé qua để nhắc bạn giữ gìn sức khỏe và làm việc hiệu quả hơn nè.",
-        "Code tool thì mệt nhưng thấy anh em dùng hiệu quả là Admin vui rồi. Tâm sự chút nha!",
-        "Alo alo! Không phải tổng đài đâu, là Admin Arsène Lupin ghé thăm và gửi lời chúc sức khỏe đấy.",
-        "Đừng vội tắt, chờ 10s thôi mà! Biết đâu lại tìm được bí kíp giúp kênh triệu view?",
-        "Một tách cà phê và vài lời nhắn nhủ từ đội ngũ phát triển gửi đến các Youtuber tài năng.",
+    // Danh sách nội dung quảng cáo đa dạng
+    const adsData: AdContent[] = [
+        {
+            id: 'community',
+            themeColor: 'from-blue-600 to-cyan-500',
+            icon: (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+            ),
+            title: "CỘNG ĐỒNG YOUTUBE TẤN VĂN",
+            message: (
+                <>
+                    Bạn đang làm Youtube một mình? Đừng lủi thủi nữa! <br/>
+                    Tham gia ngay <strong>Group Zalo</strong> để cùng chia sẻ kinh nghiệm, học hỏi cách xây kênh và cập nhật những tut/trick mới nhất từ anh em trong nghề.
+                </>
+            ),
+            ctaText: "Tham gia Group Zalo Ngay",
+            ctaLink: "https://zalo.me/g/qnkofg173"
+        },
+        {
+            id: 'tool-veo3',
+            themeColor: 'from-purple-600 to-pink-500',
+            icon: (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+            ),
+            title: "TOOL VEO3 ULTRA - TỰ ĐỘNG HÓA",
+            message: (
+                <>
+                    Bạn mất quá nhiều thời gian để làm video hoạt hình? <br/>
+                    Khám phá ngay <strong>Tool Veo3 Ultra</strong> - Giải pháp tạo video hàng loạt, tự động hóa quy trình từ kịch bản đến hình ảnh. Xây kênh nhàn tênh!
+                </>
+            ),
+            ctaText: "Tìm hiểu Tool Veo3",
+            ctaLink: "https://zalo.me/g/qnkofg173"
+        },
+        {
+            id: 'support',
+            themeColor: 'from-orange-500 to-red-500',
+            icon: (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+            ),
+            title: "HỖ TRỢ TRỰC TIẾP TỪ ADMIN",
+            message: (
+                <>
+                    Gặp khó khăn khi sử dụng Tsoft2? Hay cần tư vấn về tài nguyên MMO, tài khoản ChatGPT/Gemini? <br/>
+                    Liên hệ trực tiếp với <strong>Arsène Lupin</strong> để được support tận răng nhé!
+                </>
+            ),
+            ctaText: "Chat với Admin",
+            ctaLink: "https://zalo.me/0879382468"
+        },
+        {
+            id: 'resources',
+            themeColor: 'from-green-500 to-emerald-600',
+            icon: (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+            ),
+            title: "KHO TÀI NGUYÊN MMO - TIFOSHOP",
+            message: (
+                <>
+                    Thiếu tài nguyên làm Youtube? Cần mua VPS, Proxy, hay Acc Trust? <br/>
+                    Ghé ngay <strong>TifoShop</strong> - Cộng đồng mua bán, trao đổi tài nguyên uy tín cho dân MMO.
+                </>
+            ),
+            ctaText: "Vào Chợ TifoShop",
+            ctaLink: "https://zalo.me/g/vskind805"
+        }
     ];
 
-    // Logic đếm ngược 10s để mở khóa nút đóng
+    // Randomize ad on mount or rotation
+    useEffect(() => {
+        // Chọn ngẫu nhiên một nội dung khi component mount lần đầu
+        setCurrentAdIndex(Math.floor(Math.random() * adsData.length));
+    }, []);
+
+    // Logic đếm ngược 3s
     useEffect(() => {
         if (isOpen) {
             setCanClose(false);
-            setCountdown(10);
+            setCountdown(3);
             const timer = setInterval(() => {
                 setCountdown((prev) => {
                     if (prev <= 1) {
@@ -37,11 +117,11 @@ const AdsPopup: React.FC = () => {
         }
     }, [isOpen]);
 
-    // Logic lặp lại mỗi 15 phút (15 * 60 * 1000)
+    // Logic lặp lại mỗi 15 phút
     useEffect(() => {
         const interval = setInterval(() => {
-            // Chọn lời dẫn tiếp theo
-            setIntroIndex(prev => (prev + 1) % intros.length);
+            // Chuyển sang nội dung tiếp theo trong danh sách
+            setCurrentAdIndex(prev => (prev + 1) % adsData.length);
             setIsOpen(true);
         }, 15 * 60 * 1000); 
 
@@ -50,84 +130,79 @@ const AdsPopup: React.FC = () => {
 
     if (!isOpen) return null;
 
+    const currentAd = adsData[currentAdIndex];
+
     return (
-        <div className="fixed inset-0 bg-black/90 z-[9999] flex items-center justify-center p-4 animate-fade-in backdrop-blur-sm">
-            <div className="bg-dark-card border-2 border-brand-purple rounded-2xl shadow-[0_0_30px_rgba(109,40,217,0.6)] max-w-lg w-full p-8 relative text-center overflow-hidden">
+        <div className="fixed inset-0 bg-black/80 z-[9999] flex items-center justify-center p-4 animate-fade-in backdrop-blur-md">
+            <div className="bg-dark-card rounded-3xl shadow-2xl overflow-hidden max-w-4xl w-full flex flex-col md:flex-row relative border border-gray-700">
                 
-                {/* Nút tắt (X) - Chỉ hiện khi canClose = true */}
+                {/* Close Button */}
                 {canClose && (
                     <button 
                         onClick={() => setIsOpen(false)}
-                        className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-full transition-all z-20"
+                        className="absolute top-3 right-3 p-2 bg-black/40 hover:bg-black/60 text-white rounded-full transition-all z-20 backdrop-blur-sm"
                         title="Đóng thông báo"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 )}
 
-                {/* Trang trí nền */}
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-pulse"></div>
-                
-                <div className="mb-6">
-                     <div className="mx-auto w-16 h-16 bg-brand-purple/20 rounded-full flex items-center justify-center mb-4 animate-bounce">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-brand-light-purple" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                        </svg>
-                     </div>
-                    <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 mb-2">
-                        GÓC TÂM SỰ CÙNG ADMIN
-                    </h2>
-                    <p className="text-gray-300 italic text-sm mb-6 border-b border-gray-700 pb-4">
-                        "{intros[introIndex]}"
-                    </p>
+                {/* Left Side: Visual & Icon (35% width) */}
+                <div className={`md:w-5/12 bg-gradient-to-br ${currentAd.themeColor} p-8 flex flex-col items-center justify-center text-center relative overflow-hidden`}>
+                    {/* Decorative circles */}
+                    <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full -translate-x-1/2 -translate-y-1/2 blur-2xl"></div>
+                    <div className="absolute bottom-0 right-0 w-32 h-32 bg-black/10 rounded-full translate-x-1/2 translate-y-1/2 blur-2xl"></div>
+                    
+                    <div className="relative z-10 transform transition-transform hover:scale-110 duration-500">
+                        {currentAd.icon}
+                    </div>
+                    <h3 className="relative z-10 text-white font-black text-2xl mt-6 uppercase tracking-wider leading-tight drop-shadow-md">
+                        {currentAd.title}
+                    </h3>
                 </div>
 
-                <div className="space-y-4 text-left bg-gray-900/50 p-5 rounded-xl border border-gray-700">
-                    <p className="text-white leading-relaxed">
-                        ❤️ Website này là tâm huyết được xây dựng bởi Admin <a href="https://zalo.me/0879382468" target="_blank" rel="noopener noreferrer" className="font-bold text-cyan-400 hover:text-cyan-300 hover:underline cursor-pointer bg-cyan-900/20 px-1 rounded">Arsène Lupin</a> dành tặng riêng cho anh em cộng đồng làm Youtube.
-                    </p>
-                    
-                    <p className="text-gray-300 leading-relaxed">
-                        Mong muốn lớn nhất của mình là giúp anh em làm video nhanh hơn, nhàn hơn và tiết kiệm thời gian quý báu để tập trung vào sáng tạo nội dung.
-                    </p>
-
-                    <div className="bg-brand-purple/10 border-l-4 border-brand-purple p-3 mt-2">
-                        <p className="text-sm text-gray-300">
-                            🚀 Nếu thấy công cụ hữu ích, anh em có thể ủng hộ mình bằng cách ghé xem các tài khoản A.I (ChatGPT, Gemini, Midjourney...) hoặc <strong>Tool Veo3 tạo video hàng loạt</strong> mà mình đang cung cấp nhé! Sự ủng hộ của anh em là động lực để mình duy trì và nâng cấp web tốt hơn mỗi ngày. 🥰
-                        </p>
+                {/* Right Side: Content (65% width) */}
+                <div className="md:w-7/12 p-8 bg-dark-card flex flex-col justify-between relative">
+                    <div>
+                        <div className="flex items-center space-x-2 mb-4">
+                             <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-700 text-gray-300 uppercase tracking-wider border border-gray-600">
+                                Thông báo từ Admin
+                             </span>
+                        </div>
+                        
+                        <div className="text-gray-300 text-lg leading-relaxed mb-6">
+                            {currentAd.message}
+                        </div>
                     </div>
 
-                    <div className="pt-4">
+                    <div className="space-y-3">
                         <a 
-                            href="https://zalo.me/g/qnkofg173" 
+                            href={currentAd.ctaLink}
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white rounded-lg font-bold transition-all transform hover:scale-105 shadow-lg border border-blue-500/30"
+                            className={`flex items-center justify-center gap-2 w-full py-4 bg-gradient-to-r ${currentAd.themeColor} text-white rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] shadow-lg hover:shadow-xl`}
                         >
+                            {currentAd.ctaText}
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                                <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
                             </svg>
-                            Tham gia Group Hỗ Trợ Anh Em Youtube
                         </a>
-                        <p className="text-center text-xs text-gray-500 mt-3">
-                            Cần hỗ trợ gấp? Hotline Admin: <span className="text-orange-400 font-semibold">037 28 99999</span>
-                        </p>
+                        
+                        <button
+                            onClick={() => setIsOpen(false)}
+                            disabled={!canClose}
+                            className={`w-full py-3 text-sm font-medium transition-colors rounded-lg border ${
+                                canClose 
+                                ? 'text-gray-400 hover:text-white border-transparent hover:bg-gray-800' 
+                                : 'text-gray-600 border-transparent cursor-wait'
+                            }`}
+                        >
+                            {canClose ? "Bỏ qua, tôi đang bận" : `Vui lòng đợi giây lát (${countdown}s)`}
+                        </button>
                     </div>
                 </div>
-
-                <button
-                    onClick={() => setIsOpen(false)}
-                    disabled={!canClose}
-                    className={`mt-6 w-full py-3 rounded-lg font-bold transition-all ${
-                        canClose 
-                        ? 'bg-gray-700 hover:bg-gray-600 text-white cursor-pointer shadow-md border border-gray-600' 
-                        : 'bg-gray-800 text-gray-500 cursor-not-allowed border border-transparent'
-                    }`}
-                >
-                    {canClose ? "Đã hiểu, mình sẽ ủng hộ sau ❤️" : `Vui lòng đợi giây lát (${countdown}s)`}
-                </button>
             </div>
         </div>
     );
