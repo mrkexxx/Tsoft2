@@ -1235,13 +1235,16 @@ export const generateThumbnailIdeas = async (
 ): Promise<ThumbnailAnalysisResult> => {
     const ai = getAiClient();
     try {
+        // Kiểm tra xem tiêu đề có tồn tại hay không
+        const hasTitle = videoTitle && videoTitle.trim().length > 0;
+
         const systemInstruction = `You are a world-class YouTube Click-Through Rate (CTR) strategist and graphic designer. Your task is to analyze a video and generate high-converting thumbnail ideas.
 
         **Workflow:**
         1.  **Analyze Input:** Analyze the provided Video Title and Content Context. Detect the main language of the content.
         2.  **Brainstorm:** Create 4 distinct, viral-worthy thumbnail concepts.
         3.  **For EACH concept, provide:**
-            -   **Text (Hook):** The text overlay MUST be the EXACT video title provided by the user, DO NOT change it.
+            -   **Text (Hook):** ${hasTitle ? 'The text overlay MUST be the EXACT video title provided by the user, DO NOT change it.' : 'Create a text overlay (Hook). It should be short enough to be readable on mobile. Prioritize impact, curiosity, and emotional resonance. The Hook Text MUST be in the same language as the video content.'}
             -   **Colors:** Suggest a color palette based on psychology.
             -   **Font:** Suggest a font style.
             -   **Visual:** A vivid description of the main image composition in VIETNAMESE.
@@ -1259,10 +1262,12 @@ export const generateThumbnailIdeas = async (
           "reasoning": "..."
         }`;
 
-        let userContent = `**Video Title:** ${videoTitle}\n**Video Content/Context:**\n---\n${videoContent}\n---`;
+        let userContent = ``;
+        if (hasTitle) {
+            userContent += `**Video Title:** ${videoTitle}\n`;
+        }
+        userContent += `**Video Content/Context:**\n---\n${videoContent}\n---`;
 
-        // When using tools, responseMimeType/responseSchema are often restricted or flaky.
-        // We will ask for JSON text and parse it manually.
         const requestConfig: any = {
             systemInstruction,
         };
@@ -1301,10 +1306,12 @@ export const generateThumbnailIdeas = async (
 
         const parsedResponse: ThumbnailAnalysisResult = parseJSONFromText(jsonStr);
         
-        // Enforce the video title as hook text
-        parsedResponse.ideas.forEach(idea => {
-            idea.text = videoTitle;
-        });
+        // Enforce the video title as hook text ONLY if provided by the user
+        if (hasTitle) {
+            parsedResponse.ideas.forEach(idea => {
+                idea.text = videoTitle;
+            });
+        }
 
         return parsedResponse;
 

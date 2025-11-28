@@ -59,8 +59,9 @@ const ThumbnailIdeasGenerator: React.FC<ThumbnailIdeasGeneratorProps> = ({ onGoH
   };
 
   const handleGenerate = async () => {
-    if (!videoTitle.trim() || !videoContent.trim()) {
-      setError('Vui lòng nhập Tiêu đề và Nội dung video (hoặc tải lên file kịch bản).');
+    // Validate: Content is required, Title is optional
+    if (!videoContent.trim()) {
+      setError('Vui lòng nhập Nội dung video (hoặc tải lên file kịch bản).');
       return;
     }
 
@@ -85,7 +86,10 @@ const ThumbnailIdeasGenerator: React.FC<ThumbnailIdeasGeneratorProps> = ({ onGoH
 
       setGeneratingIds(prev => [...prev, index]);
       try {
-          const videoInfo = `Title: ${videoTitle}\nContent: ${videoContent.substring(0, 1000)}...`; // Truncate for prompt context to save tokens
+          // Context for prompt generation: Include title only if present
+          const videoInfo = videoTitle 
+            ? `Title: ${videoTitle}\nContent: ${videoContent.substring(0, 1000)}...`
+            : `Content: ${videoContent.substring(0, 1000)}...`;
             
           const prompt = await generatePromptFromIdea(idea, videoInfo);
           setGeneratedPrompts(prev => ({ ...prev, [index]: prompt }));
@@ -120,7 +124,7 @@ const ThumbnailIdeasGenerator: React.FC<ThumbnailIdeasGeneratorProps> = ({ onGoH
       <div className="bg-dark-card p-8 rounded-xl border border-dark-border shadow-lg mb-12">
         <div className="space-y-6">
              <div>
-                 <label className="block text-lg font-bold text-heading mb-2">Tiêu đề Video</label>
+                 <label className="block text-lg font-bold text-heading mb-2">Tiêu đề Video (Không bắt buộc)</label>
                  <input 
                   type="text" 
                   value={videoTitle} 
@@ -132,7 +136,7 @@ const ThumbnailIdeasGenerator: React.FC<ThumbnailIdeasGeneratorProps> = ({ onGoH
              
              <div>
                  <div className="flex justify-between items-center mb-2">
-                    <label className="block text-lg font-bold text-heading">Nội dung / Kịch bản Video</label>
+                    <label className="block text-lg font-bold text-heading">Nội dung / Kịch bản Video <span className="text-red-500">*</span></label>
                     <button
                         onClick={() => fileInputRef.current?.click()}
                         className="flex items-center text-sm py-1.5 px-3 bg-gray-700 hover:bg-gray-600 rounded-md transition-colors border border-gray-600"
@@ -153,7 +157,7 @@ const ThumbnailIdeasGenerator: React.FC<ThumbnailIdeasGeneratorProps> = ({ onGoH
              <div className="pt-4 text-center">
                 <button
                     onClick={handleGenerate}
-                    disabled={isLoading || !videoTitle.trim() || !videoContent.trim()}
+                    disabled={isLoading || !videoContent.trim()}
                     className="py-3 px-12 font-bold text-white text-lg bg-gradient-to-r from-brand-purple to-brand-light-purple rounded-full hover:shadow-[0_0_20px_rgba(139,92,246,0.5)] disabled:opacity-50 disabled:cursor-not-allowed transition-all transform hover:scale-105"
                 >
                     {isLoading ? 'Đang phân tích...' : 'Phân tích & Tìm ý tưởng'}
@@ -337,7 +341,7 @@ const ThumbnailIdeasGenerator: React.FC<ThumbnailIdeasGeneratorProps> = ({ onGoH
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             <h3 className="text-2xl font-bold text-gray-500 mb-2">Chưa có kết quả</h3>
-            <p className="text-gray-500 max-w-lg">Nhập Tiêu đề và Nội dung video để AI giúp bạn tìm ra ý tưởng Thumbnail triệu view.</p>
+            <p className="text-gray-500 max-w-lg">Nhập Nội dung video để AI giúp bạn tìm ra ý tưởng Thumbnail triệu view.</p>
          </div>
       )}
     </div>

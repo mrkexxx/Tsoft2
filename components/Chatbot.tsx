@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI, Chat } from "@google/genai";
 
@@ -54,7 +55,7 @@ const Chatbot: React.FC = () => {
             - Address them as "${pronoun} ${name}" in greetings, and just "${pronoun}" in subsequent conversation. For example: "Dạ em chào ${pronoun} ${name}. Em có thể giúp gì cho ${pronoun} ạ?"
 
             **The app has four main features:**
-            1.  **Tạo hình ảnh theo kịch bản:** Users upload a script, and the AI generates descriptive prompts and illustrative images for each scene.
+            1.  **Tạo prompt hình ảnh theo kịch bản hàng loạt:** Users upload a script, and the AI generates descriptive prompts and illustrative images for each scene.
             2.  **Tạo prompt Veo3 hàng loạt:** An advanced feature for animation. Users provide a script and characters, and the AI creates detailed, consistent video prompts.
             3.  **Tạo Thumbnail theo ảnh mẫu:** Users upload a sample thumbnail, and the AI generates a prompt to create similar images.
             4.  **Viết tiêu đề chuẩn SEO Youtube:** The AI acts as a YouTube SEO expert, generating optimized titles, descriptions, and keywords.
@@ -271,7 +272,7 @@ const Chatbot: React.FC = () => {
                     
                     {phase === 'chatting' && messages.length === 5 && !isLoading && (
                         <div className="pt-4 flex flex-wrap gap-2 justify-center animate-fade-in-up">
-                             <button onClick={() => sendSuggestedPrompt('Tạo ảnh theo kịch bản là gì?')} className="text-sm py-1.5 px-3 bg-gray-700/50 rounded-full hover:bg-gray-700 transition-colors">Tạo ảnh theo kịch bản là gì?</button>
+                             <button onClick={() => sendSuggestedPrompt('Tạo prompt hình ảnh theo kịch bản hàng loạt là gì?')} className="text-sm py-1.5 px-3 bg-gray-700/50 rounded-full hover:bg-gray-700 transition-colors">Tạo prompt hình ảnh theo kịch bản hàng loạt là gì?</button>
                              <button onClick={() => sendSuggestedPrompt('Tạo prompt Veo3 hoạt động thế nào?')} className="text-sm py-1.5 px-3 bg-gray-700/50 rounded-full hover:bg-gray-700 transition-colors">Tạo prompt Veo3 hoạt động thế nào?</button>
                              <button onClick={() => sendSuggestedPrompt('Tính năng SEO Youtube có gì hay?')} className="text-sm py-1.5 px-3 bg-gray-700/50 rounded-full hover:bg-gray-700 transition-colors">Tính năng SEO Youtube có gì hay?</button>
                         </div>

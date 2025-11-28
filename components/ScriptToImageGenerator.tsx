@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import ScriptInput from './ScriptInput';
 import OptionsPanel from './OptionsPanel';
@@ -286,7 +287,7 @@ const ScriptToImageGenerator: React.FC<ScriptToImageGeneratorProps> = ({ onGoHom
 
   return (
     <div className="animate-fade-in">
-        <PageHeader title="Tạo hình ảnh theo kịch bản" onBack={onGoHome} />
+        <PageHeader title="Tạo prompt hình ảnh theo kịch bản hàng loạt" onBack={onGoHome} />
 
         {isLoading && <Loader message={loadingMessage} />}
 
