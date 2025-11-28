@@ -1244,7 +1244,7 @@ export const generateThumbnailIdeas = async (
         1.  **Analyze Input:** Analyze the provided Video Title and Content Context. Detect the main language of the content.
         2.  **Brainstorm:** Create 4 distinct, viral-worthy thumbnail concepts.
         3.  **For EACH concept, provide:**
-            -   **Text (Hook):** ${hasTitle ? 'The text overlay MUST be the EXACT video title provided by the user, DO NOT change it.' : 'Create a text overlay (Hook). It should be short enough to be readable on mobile. Prioritize impact, curiosity, and emotional resonance. The Hook Text MUST be in the same language as the video content.'}
+            -   **Text (Hook):** ${hasTitle ? 'The text overlay MUST be the EXACT video title provided by the user, DO NOT change it.' : 'Return an empty string "". Do NOT generate a hook text if no title is provided.'}
             -   **Colors:** Suggest a color palette based on psychology.
             -   **Font:** Suggest a font style.
             -   **Visual:** A vivid description of the main image composition in VIETNAMESE.
@@ -1281,7 +1281,7 @@ export const generateThumbnailIdeas = async (
                     items: {
                         type: Type.OBJECT,
                         properties: {
-                            text: { type: Type.STRING, description: "Hook text in the appropriate language." },
+                            text: { type: Type.STRING, description: "Hook text." },
                             colors: { type: Type.STRING, description: "Suggested color palette." },
                             font: { type: Type.STRING, description: "Suggested font style." },
                             visual: { type: Type.STRING, description: "Visual composition description in Vietnamese." }
@@ -1311,6 +1311,11 @@ export const generateThumbnailIdeas = async (
             parsedResponse.ideas.forEach(idea => {
                 idea.text = videoTitle;
             });
+        } else {
+            // Force empty text if no title provided
+            parsedResponse.ideas.forEach(idea => {
+                idea.text = "";
+            });
         }
 
         return parsedResponse;
@@ -1330,6 +1335,12 @@ export const generatePromptFromIdea = async (
 ): Promise<string> => {
   const ai = getAiClient();
   try {
+    const hasText = idea.text && idea.text.trim().length > 0;
+
+    const textInstruction = hasText
+        ? `1.  **Text Inclusion (MANDATORY):** You MUST include the exact text overlay in the prompt. Most modern AI models (like Ideogram, DALL-E 3, Flux) can render text. Use the format: "text overlay that says '${idea.text}'".`
+        : `1.  **No Text (MANDATORY):** Do NOT include any specific text overlay instructions or ask for text. Focus entirely on the visual imagery and composition. The output image MUST NOT contain any text. Append "no text, textless, no words" to the end of the prompt.`;
+
     const systemInstruction = `You are an expert prompt engineer for image generation AI (like Midjourney, Imagen, DALL-E, Ideogram). Your task is to convert a thumbnail concept into a highly detailed, professional image generation prompt in ENGLISH.
 
     **Input Data:**
@@ -1342,14 +1353,14 @@ export const generatePromptFromIdea = async (
     **Goal:** Create a comprehensive prompt for generating the thumbnail.
     
     **CRITICAL INSTRUCTIONS:**
-    1.  **Text Inclusion (MANDATORY):** You MUST include the exact text overlay in the prompt. Most modern AI models (like Ideogram, DALL-E 3, Flux) can render text. Use the format: "text overlay that says '${idea.text}'".
+    ${textInstruction}
     2.  **Focus on Visuals:** Describe the subject, setting, lighting, camera angle, and composition based on the 'Visual' description provided.
-    3.  **Style Integration:** Incorporate the 'Colors', 'Font' style, and overall mood into the visual description.
+    3.  **Style Integration:** Incorporate the 'Colors', 'Font' style (if applicable), and overall mood into the visual description.
     4.  **High Quality:** Add keywords for high quality (e.g., 4k, hyperrealistic, cinematic lighting, trending on artstation, youtube thumbnail style).
     5.  **Output:** Return ONLY the final English prompt string. No explanations.
     
     **Format Structure:**
-    "[Visual Description], [Style & Atmosphere], [Lighting & Colors], text overlay '${idea.text}', [Text Font/Style Description], 4k, high resolution."`;
+    "[Visual Description], [Style & Atmosphere], [Lighting & Colors]${hasText ? `, text overlay '${idea.text}'` : ''}, 4k, high resolution${!hasText ? ', no text, textless' : ''}."`;
 
     const userContent = `
     **Video Info:**
@@ -1357,7 +1368,7 @@ export const generatePromptFromIdea = async (
 
     **Thumbnail Idea:**
     - Visual: ${idea.visual}
-    - Text Overlay: ${idea.text}
+    - Text Overlay: ${hasText ? idea.text : "(None)"}
     - Colors/Mood: ${idea.colors}
     - Font Style: ${idea.font}
 

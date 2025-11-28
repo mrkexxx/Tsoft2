@@ -86,10 +86,7 @@ const ThumbnailIdeasGenerator: React.FC<ThumbnailIdeasGeneratorProps> = ({ onGoH
 
       setGeneratingIds(prev => [...prev, index]);
       try {
-          // Context for prompt generation: Include title only if present
-          const videoInfo = videoTitle 
-            ? `Title: ${videoTitle}\nContent: ${videoContent.substring(0, 1000)}...`
-            : `Content: ${videoContent.substring(0, 1000)}...`;
+          const videoInfo = `Title: ${videoTitle || 'Untitled Video'}\nContent: ${videoContent.substring(0, 1000)}...`; // Truncate for prompt context to save tokens
             
           const prompt = await generatePromptFromIdea(idea, videoInfo);
           setGeneratedPrompts(prev => ({ ...prev, [index]: prompt }));
@@ -188,7 +185,11 @@ const ThumbnailIdeasGenerator: React.FC<ThumbnailIdeasGeneratorProps> = ({ onGoH
                          <div>
                              <p className="text-sm text-yellow-500/80 uppercase font-bold tracking-wider mb-2">Hook Text (Chữ trên hình)</p>
                              <div className="bg-black/40 p-5 rounded-xl border border-yellow-500/20 backdrop-blur-sm">
-                                <p className="text-4xl font-black text-white leading-tight">"{result.ideas[result.bestChoiceIndex].text}"</p>
+                                {result.ideas[result.bestChoiceIndex].text ? (
+                                    <p className="text-4xl font-black text-white leading-tight">"{result.ideas[result.bestChoiceIndex].text}"</p>
+                                ) : (
+                                    <p className="text-xl font-medium text-gray-400 italic">(Không có chữ trên hình)</p>
+                                )}
                              </div>
                          </div>
                          
@@ -276,7 +277,11 @@ const ThumbnailIdeasGenerator: React.FC<ThumbnailIdeasGeneratorProps> = ({ onGoH
                             
                             <div className="mb-4 min-h-[4rem]">
                                 <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Hook</p>
-                                <h4 className="text-2xl font-black text-white leading-tight group-hover:text-brand-light-purple transition-colors">"{idea.text}"</h4>
+                                {idea.text ? (
+                                    <h4 className="text-2xl font-black text-white leading-tight group-hover:text-brand-light-purple transition-colors">"{idea.text}"</h4>
+                                ) : (
+                                    <p className="text-sm text-gray-500 italic mt-2">(Không có chữ)</p>
+                                )}
                             </div>
 
                             <div className="space-y-3 text-sm flex-grow">
