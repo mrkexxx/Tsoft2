@@ -32,6 +32,16 @@ const parseJSONFromText = (text: string): any => {
                 return JSON.parse(potentialJson);
             } catch (e3) { /* continue */ }
         }
+
+        // 4. Try finding the outermost brackets (for arrays)
+        const firstBracket = text.indexOf('[');
+        const lastBracket = text.lastIndexOf(']');
+        if (firstBracket !== -1 && lastBracket !== -1) {
+            const potentialJsonArray = text.substring(firstBracket, lastBracket + 1);
+            try {
+                return JSON.parse(potentialJsonArray);
+            } catch (e4) { /* continue */ }
+        }
         
         throw new Error("AI trả về dữ liệu không đúng định dạng JSON. Vui lòng thử lại.");
     }
@@ -146,13 +156,21 @@ export const generatePromptsFromScript = async (
             required: ['sceneName', 'sceneDescription', 'imagePrompt', 'videoPrompt']
           },
         },
+        // Relax safety settings to prevent false positives blocking script generation
+        safetySettings: [
+            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+        ],
       },
     });
 
-    const parsedResponse: GeneratedPrompt[] = JSON.parse(response.text);
+    // FIX: Use robust parser instead of direct JSON.parse
+    const parsedResponse: GeneratedPrompt[] = parseJSONFromText(response.text);
 
     if (!parsedResponse || parsedResponse.length === 0) {
-      throw new Error("Không thể tạo lời nhắc từ kịch bản.");
+      throw new Error("AI không trả về kết quả nào. Hãy thử lại hoặc kiểm tra kịch bản.");
     }
     
     return parsedResponse;
@@ -160,7 +178,7 @@ export const generatePromptsFromScript = async (
   } catch (error) {
     console.error("Lỗi khi tạo prompts:", error);
     if (error instanceof Error) {
-        throw new Error(`Đã xảy ra lỗi: ${error.message}`);
+        throw new Error(`Lỗi tạo prompt: ${error.message}`);
     }
     throw new Error("Đã xảy ra lỗi không xác định trong quá trình tạo prompt.");
   }
@@ -456,10 +474,18 @@ export const identifyCharactersFromScript = async (script: string, characterNati
             required: ['name', 'prompt'],
           },
         },
+        // Relax safety settings
+        safetySettings: [
+            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+        ],
       },
     });
 
-    const parsedResponse: { name: string; prompt: string }[] = JSON.parse(response.text);
+    // FIX: Use robust parser
+    const parsedResponse: { name: string; prompt: string }[] = parseJSONFromText(response.text);
 
     if (!parsedResponse) {
       return [];
@@ -618,11 +644,18 @@ Your final output must be a single JSON array containing all the scene objects.`
             },
             required: ['sceneName', 'mainEvents', 'charactersPresent', 'detailedVideoPrompt']
           }
-        }
+        },
+        // Relax safety settings
+        safetySettings: [
+            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+        ],
       }
     });
 
-    const parsedResponse = JSON.parse(response.text);
+    const parsedResponse = parseJSONFromText(response.text);
 
     if (!parsedResponse || parsedResponse.length === 0) {
       throw new Error("Không thể tạo phân cảnh từ kịch bản.");
@@ -818,7 +851,7 @@ export const analyzeVideoFromFile = async (videoFile: File): Promise<VideoAnalys
             }
         });
 
-        const parsedResponse: VideoAnalysisResult = JSON.parse(response.text);
+        const parsedResponse: VideoAnalysisResult = parseJSONFromText(response.text);
 
         if (!parsedResponse || !parsedResponse.scenes || parsedResponse.scenes.length === 0) {
             throw new Error("Không thể phân tích video hoặc không tìm thấy phân cảnh nào.");
@@ -897,7 +930,7 @@ export const generateVeoPromptsFromScenes = async (analysisResult: VideoAnalysis
             }
         });
 
-        const parsedResponse: string[] = JSON.parse(response.text);
+        const parsedResponse: string[] = parseJSONFromText(response.text);
 
         if (!parsedResponse || parsedResponse.length === 0) {
             throw new Error("Không thể tạo prompt Veo3 từ các phân cảnh.");
@@ -1017,7 +1050,7 @@ export const analyzeAndRewriteScript = async (
             }
         });
 
-        const parsedResponse: ScriptAnalysisResult = JSON.parse(response.text);
+        const parsedResponse: ScriptAnalysisResult = parseJSONFromText(response.text);
         
         if (!parsedResponse) {
             throw new Error("Không thể phân tích và viết lại kịch bản.");
@@ -1212,7 +1245,7 @@ export const generateSunoPrompts = async (
             }
         });
 
-        const parsedResponse: SunoPrompt[] = JSON.parse(response.text);
+        const parsedResponse: SunoPrompt[] = parseJSONFromText(response.text);
 
         if (!parsedResponse || parsedResponse.length === 0) {
             throw new Error("Không thể tạo prompt cho Suno.");
