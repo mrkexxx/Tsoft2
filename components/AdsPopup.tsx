@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 
 interface AdContent {
@@ -34,7 +35,7 @@ const AdsPopup: React.FC = () => {
                 </>
             ),
             ctaText: "Tham gia Group Zalo Ngay",
-            ctaLink: "https://zalo.me/g/qnkofg173"
+            ctaLink: "https://zalo.me/g/emqoou461"
         },
         {
             id: 'tool-veo3',
@@ -52,7 +53,7 @@ const AdsPopup: React.FC = () => {
                 </>
             ),
             ctaText: "Tìm hiểu Tool Veo3",
-            ctaLink: "https://zalo.me/g/qnkofg173"
+            ctaLink: "https://zalo.me/g/emqoou461"
         },
         {
             id: 'support',

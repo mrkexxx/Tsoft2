@@ -85,7 +85,7 @@ const HomePage: React.FC<HomePageProps> = ({ onNavigateToScriptToImage, onNaviga
         {
             title: "Hỗ trợ tool VEO3",
             description: "Group hỗ trợ chính thức cho công cụ tạo video hàng loạt VEO3.",
-            href: "https://zalo.me/g/qnkofg173",
+            href: "https://zalo.me/g/emqoou461",
             icon: <img src="https://sf-static.upanhlaylink.com/img/image_202510216ca3829c10658dd7661449e675a09f05.jpg" alt="Hỗ trợ tool VEO3 logo" className="h-12 w-12 rounded-lg object-cover" />
         },
         {
